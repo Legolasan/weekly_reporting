@@ -12,15 +12,17 @@ async def health_check():
     return JSONResponse(content={"status": "healthy"}, status_code=200)
 
 
-# Startup event - create tables
+# Startup event - create tables (only if they don't exist)
 @app.on_event("startup")
 async def startup_event():
     try:
         from app.database import engine, Base
-        Base.metadata.create_all(bind=engine)
-        print("Database tables created successfully")
+        # checkfirst=True prevents errors if tables already exist
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+        print("Database tables ready")
     except Exception as e:
-        print(f"Database initialization error: {e}")
+        # Don't crash if tables exist or other DB issues
+        print(f"Database note: {e}")
 
 
 # Mount static files
