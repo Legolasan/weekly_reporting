@@ -85,19 +85,26 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
     })
 
 
+def parse_int_or_none(value) -> Optional[int]:
+    """Parse integer from form, return None for empty strings."""
+    if value is None or value == "" or value == "None":
+        return None
+    return int(value)
+
+
 @router.post("/api/work-items")
 async def create_item(
     request: Request,
     week_id: UUID = Form(...),
     type: str = Form(...),
     title: str = Form(...),
-    assigned_points: int = Form(...),
+    assigned_points: str = Form(...),
     start_date: Optional[str] = Form(None),
     end_date: Optional[str] = Form(None),
     planned_work: Optional[str] = Form(None),
     actual_work: Optional[str] = Form(None),
     next_week_plan: Optional[str] = Form(None),
-    completion_points: Optional[int] = Form(None),
+    completion_points: Optional[str] = Form(None),
     status: str = Form("TODO"),
     db: Session = Depends(get_db)
 ):
@@ -106,13 +113,13 @@ async def create_item(
             week_id=week_id,
             type=TaskType(type),
             title=title,
-            assigned_points=assigned_points,
+            assigned_points=int(assigned_points) if assigned_points else 0,
             start_date=parse_date(start_date) if start_date else None,
             end_date=parse_date(end_date) if end_date else None,
             planned_work=planned_work or None,
             actual_work=actual_work or None,
             next_week_plan=next_week_plan or None,
-            completion_points=completion_points,
+            completion_points=parse_int_or_none(completion_points),
             status=TaskStatus(status)
         )
         create_work_item(db, item_data)
@@ -129,13 +136,13 @@ async def update_item(
     item_id: UUID,
     type: str = Form(...),
     title: str = Form(...),
-    assigned_points: int = Form(...),
+    assigned_points: str = Form(...),
     start_date: Optional[str] = Form(None),
     end_date: Optional[str] = Form(None),
     planned_work: Optional[str] = Form(None),
     actual_work: Optional[str] = Form(None),
     next_week_plan: Optional[str] = Form(None),
-    completion_points: Optional[int] = Form(None),
+    completion_points: Optional[str] = Form(None),
     status: str = Form("TODO"),
     db: Session = Depends(get_db)
 ):
@@ -143,13 +150,13 @@ async def update_item(
         item_data = WorkItemUpdate(
             type=TaskType(type),
             title=title,
-            assigned_points=assigned_points,
+            assigned_points=int(assigned_points) if assigned_points else 0,
             start_date=parse_date(start_date) if start_date else None,
             end_date=parse_date(end_date) if end_date else None,
             planned_work=planned_work or None,
             actual_work=actual_work or None,
             next_week_plan=next_week_plan or None,
-            completion_points=completion_points,
+            completion_points=parse_int_or_none(completion_points),
             status=TaskStatus(status)
         )
         item = update_work_item(db, item_id, item_data)
