@@ -1,0 +1,25 @@
+# FastAPI and server
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Database
+sqlalchemy==2.0.36
+alembic==1.14.0
+psycopg2-binary==2.9.10
+
+# Validation and settings
+pydantic==2.10.3
+pydantic-settings==2.7.0
+
+# Templates and forms
+jinja2==3.1.4
+python-multipart==0.0.19
+
+# Excel/CSV export
+openpyxl==3.1.5
+
+# Date utilities
+python-dateutil==2.9.0.post0
+
+# Environment variables
+python-dotenv==1.0.1

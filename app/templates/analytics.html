@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Work Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-white">Analytics</h1>
+        <p class="text-slate-400 mt-1">Insights from the last 12 weeks</p>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Points Trend -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Points Utilization Trend</h2>
+            <div class="h-64">
+                <canvas id="pointsTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Task Distribution -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Task Type Distribution</h2>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="typeDistributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Status Breakdown -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Status Breakdown</h2>
+            <div class="h-64">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <h2 class="text-lg font-semibold text-white mb-4">Quick Stats</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <p class="text-slate-400 text-sm">Total Planned</p>
+                    <p class="text-2xl font-bold text-emerald-400">{{ analytics.type_distribution.PLANNED.points }}</p>
+                    <p class="text-sm text-slate-500">{{ analytics.type_distribution.PLANNED.count }} tasks</p>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <p class="text-slate-400 text-sm">Total Unplanned</p>
+                    <p class="text-2xl font-bold text-amber-400">{{ analytics.type_distribution.UNPLANNED.points }}</p>
+                    <p class="text-sm text-slate-500">{{ analytics.type_distribution.UNPLANNED.count }} tasks</p>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <p class="text-slate-400 text-sm">Total Ad-Hoc</p>
+                    <p class="text-2xl font-bold text-purple-400">{{ analytics.type_distribution.ADHOC.points }}</p>
+                    <p class="text-sm text-slate-500">{{ analytics.type_distribution.ADHOC.count }} tasks</p>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <p class="text-slate-400 text-sm">Completed</p>
+                    <p class="text-2xl font-bold text-green-400">{{ analytics.status_breakdown.COMPLETED }}</p>
+                    <p class="text-sm text-slate-500">tasks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carry-Over Table -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700">
+        <div class="p-6 border-b border-slate-700">
+            <h2 class="text-lg font-semibold text-white">Carry-Over Analysis</h2>
+            <p class="text-slate-400 text-sm mt-1">Tasks delayed or still in progress from previous weeks</p>
+        </div>
+        <div class="p-6">
+            {% if analytics.carry_over %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left text-slate-400 text-sm border-b border-slate-700">
+                            <th class="pb-3 font-medium">Title</th>
+                            <th class="pb-3 font-medium">Type</th>
+                            <th class="pb-3 font-medium">Status</th>
+                            <th class="pb-3 font-medium">Points</th>
+                            <th class="pb-3 font-medium">Original Week</th>
+                            <th class="pb-3 font-medium">Age</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-300">
+                        {% for item in analytics.carry_over %}
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-3">{{ item.title }}</td>
+                            <td class="py-3">
+                                <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.type == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item.type == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
+                                    {{ item.type }}
+                                </span>
+                            </td>
+                            <td class="py-3">
+                                <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% else %}bg-blue-500/20 text-blue-400{% endif %}">
+                                    {{ item.status.replace('_', ' ') }}
+                                </span>
+                            </td>
+                            <td class="py-3 font-medium">{{ item.points }}</td>
+                            <td class="py-3 text-slate-400">{{ item.week }}</td>
+                            <td class="py-3">
+                                <span class="{% if item.weeks_old >= 4 %}text-red-400{% elif item.weeks_old >= 2 %}text-amber-400{% else %}text-slate-400{% endif %}">
+                                    {{ item.weeks_old }} week{% if item.weeks_old != 1 %}s{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <svg class="w-12 h-12 text-green-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-slate-400">No carry-over items. Great job staying on track!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+const analyticsData = {{ analytics | tojson | safe }};
+
+// Chart.js default styling for dark theme
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#334155';
+
+// Points Trend Chart
+const pointsTrendCtx = document.getElementById('pointsTrendChart').getContext('2d');
+new Chart(pointsTrendCtx, {
+    type: 'line',
+    data: {
+        labels: analyticsData.points_trend.map(d => d.week),
+        datasets: [{
+            label: 'Points Used',
+            data: analyticsData.points_trend.map(d => d.used),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: '#1e293b' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// Type Distribution Chart
+const typeCtx = document.getElementById('typeDistributionChart').getContext('2d');
+new Chart(typeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Planned', 'Unplanned', 'Ad-Hoc'],
+        datasets: [{
+            data: [
+                analyticsData.type_distribution.PLANNED.points,
+                analyticsData.type_distribution.UNPLANNED.points,
+                analyticsData.type_distribution.ADHOC.points
+            ],
+            backgroundColor: ['#10b981', '#f59e0b', '#a855f7'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 20 }
+            }
+        }
+    }
+});
+
+// Status Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusLabels = Object.keys(analyticsData.status_breakdown).map(s => s.replace('_', ' '));
+const statusValues = Object.values(analyticsData.status_breakdown);
+const statusColors = {
+    'TODO': '#64748b',
+    'IN PROGRESS': '#3b82f6',
+    'HOLD': '#eab308',
+    'DELAYED': '#ef4444',
+    'COMPLETED': '#22c55e',
+    'ABANDONED': '#6b7280'
+};
+
+new Chart(statusCtx, {
+    type: 'bar',
+    data: {
+        labels: statusLabels,
+        datasets: [{
+            data: statusValues,
+            backgroundColor: statusLabels.map(l => statusColors[l] || '#64748b')
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#1e293b' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Input - Work Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header with Week Navigation -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-white">Work Items</h1>
+            <p class="text-slate-400 mt-1">Manage tasks for the selected week</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="/input/{{ prev_week }}" class="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <select id="weekSelector" onchange="window.location.href='/input/' + this.value" class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                {% for w in all_weeks %}
+                <option value="{{ w.week_start }}" {% if w.week_start == week.week_start %}selected{% endif %}>
+                    {{ w.week_start.strftime('%b %d') }} - {{ w.week_end.strftime('%b %d, %Y') }}
+                </option>
+                {% endfor %}
+            </select>
+            <a href="/input/{{ next_week }}" class="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- Points Summary Bar -->
+    <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white">Points Summary</h3>
+            <span class="text-2xl font-bold text-white">{{ total_used }}/100</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-4 mb-4 overflow-hidden flex">
+            {% if planned_points > 0 %}
+            <div class="bg-emerald-500 h-4 transition-all" style="width: {{ planned_points }}%"></div>
+            {% endif %}
+            {% if unplanned_points > 0 %}
+            <div class="bg-amber-500 h-4 transition-all" style="width: {{ unplanned_points }}%"></div>
+            {% endif %}
+            {% if adhoc_points > 0 %}
+            <div class="bg-purple-500 h-4 transition-all" style="width: {{ adhoc_points }}%"></div>
+            {% endif %}
+        </div>
+        <div class="flex items-center gap-6 text-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
+                <span class="text-slate-300">Planned: {{ planned_points }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-amber-500 rounded-full"></span>
+                <span class="text-slate-300">Unplanned: {{ unplanned_points }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
+                <span class="text-slate-300">Ad-Hoc: {{ adhoc_points }}</span>
+            </div>
+            <div class="ml-auto">
+                <span class="text-blue-400 font-medium">Remaining: {{ remaining_points }} points</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Add New Item Form -->
+        <div class="lg:col-span-1">
+            <div class="bg-slate-800 rounded-xl border border-slate-700 sticky top-8">
+                <div class="p-6 border-b border-slate-700">
+                    <h2 class="text-lg font-semibold text-white">Add Work Item</h2>
+                </div>
+                <form action="/api/work-items" method="POST" class="p-6 space-y-4">
+                    <input type="hidden" name="week_id" value="{{ week.id }}">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Type</label>
+                        <select name="type" required class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                            <option value="PLANNED">Planned</option>
+                            <option value="UNPLANNED">Unplanned</option>
+                            <option value="ADHOC">Ad-Hoc</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Title</label>
+                        <input type="text" name="title" required class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="Task title">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Start Date</label>
+                            <input type="date" name="start_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">End Date</label>
+                            <input type="date" name="end_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Points</label>
+                            <input type="number" name="assigned_points" required min="0" max="{{ remaining_points }}" value="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Completion Pts</label>
+                            <input type="number" name="completion_points" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="For planned">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Status</label>
+                        <select name="status" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                            <option value="TODO">To Do</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="HOLD">Hold</option>
+                            <option value="DELAYED">Delayed</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="ABANDONED">Abandoned</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Planned Work</label>
+                        <textarea name="planned_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="What was planned?"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Actual Work</label>
+                        <textarea name="actual_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="What was actually done?"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Next Week Plan</label>
+                        <textarea name="next_week_plan" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="Plan for next week"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                        Add Work Item
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Items List -->
+        <div class="lg:col-span-2">
+            <div class="bg-slate-800 rounded-xl border border-slate-700">
+                <div class="p-6 border-b border-slate-700">
+                    <h2 class="text-lg font-semibold text-white">Work Items ({{ items|length }})</h2>
+                </div>
+                <div class="p-6">
+                    {% if items %}
+                    <div class="space-y-4">
+                        {% for item in items %}
+                        <div class="bg-slate-700/50 rounded-xl p-6 border border-slate-600">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.type == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item.type == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
+                                            {{ item.type }}
+                                        </span>
+                                        <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.status == 'COMPLETED' %}bg-green-500/20 text-green-400{% elif item.status == 'IN_PROGRESS' %}bg-blue-500/20 text-blue-400{% elif item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% elif item.status == 'HOLD' %}bg-yellow-500/20 text-yellow-400{% else %}bg-slate-600 text-slate-300{% endif %}">
+                                            {{ item.status.replace('_', ' ') }}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-white">{{ item.title }}</h3>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-3xl font-bold text-white">{{ item.assigned_points }}</span>
+                                    <span class="text-slate-400">pts</span>
+                                    {% if item.completion_points %}
+                                    <p class="text-sm text-slate-400">Completed: {{ item.completion_points }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if item.start_date or item.end_date %}
+                            <p class="text-sm text-slate-400 mb-3">
+                                {% if item.start_date %}{{ item.start_date.strftime('%b %d') }}{% endif %}
+                                {% if item.start_date and item.end_date %} - {% endif %}
+                                {% if item.end_date %}{{ item.end_date.strftime('%b %d, %Y') }}{% endif %}
+                            </p>
+                            {% endif %}
+
+                            {% if item.planned_work %}
+                            <div class="mb-3">
+                                <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Planned Work</p>
+                                <p class="text-slate-300 text-sm">{{ item.planned_work }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if item.actual_work %}
+                            <div class="mb-3">
+                                <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Actual Work</p>
+                                <p class="text-slate-300 text-sm">{{ item.actual_work }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if item.next_week_plan %}
+                            <div class="mb-3">
+                                <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Next Week</p>
+                                <p class="text-slate-300 text-sm">{{ item.next_week_plan }}</p>
+                            </div>
+                            {% endif %}
+
+                            <div class="flex items-center gap-2 mt-4 pt-4 border-t border-slate-600">
+                                <button onclick="editItem('{{ item.id }}')" class="px-3 py-1.5 bg-slate-600 text-white text-sm rounded-lg hover:bg-slate-500 transition-colors">Edit</button>
+                                <form action="/api/work-items/{{ item.id }}/delete" method="POST" class="inline" onsubmit="return confirm('Delete this item?')">
+                                    <button type="submit" class="px-3 py-1.5 bg-red-600/20 text-red-400 text-sm rounded-lg hover:bg-red-600/30 transition-colors">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <p class="text-slate-400 text-lg">No work items for this week</p>
+                        <p class="text-slate-500 text-sm mt-1">Add your first task using the form</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-slate-700 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-white">Edit Work Item</h2>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="editForm" method="POST" class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Type</label>
+                    <select name="type" id="edit_type" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        <option value="PLANNED">Planned</option>
+                        <option value="UNPLANNED">Unplanned</option>
+                        <option value="ADHOC">Ad-Hoc</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Status</label>
+                    <select name="status" id="edit_status" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        <option value="TODO">To Do</option>
+                        <option value="IN_PROGRESS">In Progress</option>
+                        <option value="HOLD">Hold</option>
+                        <option value="DELAYED">Delayed</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="ABANDONED">Abandoned</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Title</label>
+                <input type="text" name="title" id="edit_title" required class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Start Date</label>
+                    <input type="date" name="start_date" id="edit_start_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">End Date</label>
+                    <input type="date" name="end_date" id="edit_end_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Points</label>
+                    <input type="number" name="assigned_points" id="edit_assigned_points" required min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Completion Points</label>
+                    <input type="number" name="completion_points" id="edit_completion_points" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Planned Work</label>
+                <textarea name="planned_work" id="edit_planned_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Actual Work</label>
+                <textarea name="actual_work" id="edit_actual_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Next Week Plan</label>
+                <textarea name="next_week_plan" id="edit_next_week_plan" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"></textarea>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">Save Changes</button>
+                <button type="button" onclick="closeModal()" class="px-6 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition-colors">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const items = {{ items | tojson | safe if items else '[]' }};
+
+function editItem(itemId) {
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
+
+    document.getElementById('editForm').action = `/api/work-items/${itemId}`;
+    document.getElementById('edit_type').value = item.type;
+    document.getElementById('edit_status').value = item.status;
+    document.getElementById('edit_title').value = item.title;
+    document.getElementById('edit_start_date').value = item.start_date || '';
+    document.getElementById('edit_end_date').value = item.end_date || '';
+    document.getElementById('edit_assigned_points').value = item.assigned_points;
+    document.getElementById('edit_completion_points').value = item.completion_points || '';
+    document.getElementById('edit_planned_work').value = item.planned_work || '';
+    document.getElementById('edit_actual_work').value = item.actual_work || '';
+    document.getElementById('edit_next_week_plan').value = item.next_week_plan || '';
+
+    document.getElementById('editModal').classList.remove('hidden');
+    document.getElementById('editModal').classList.add('flex');
+}
+
+function closeModal() {
+    document.getElementById('editModal').classList.add('hidden');
+    document.getElementById('editModal').classList.remove('flex');
+}
+
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
+{% endblock %}
