@@ -1,0 +1,44 @@
+from datetime import date, timedelta
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+
+
+def get_current_week_stats(db):
+    """Get current week's points statistics."""
+    from app.models.work_week import WorkWeek
+    from app.models.work_item import WorkItem
+    
+    today = date.today()
+    monday = today - timedelta(days=today.weekday())
+    
+    week = db.query(WorkWeek).filter(WorkWeek.week_start == monday).first()
+    
+    if not week:
+        return {
+            "week_start": monday,
+            "week_end": monday + timedelta(days=4),
+            "total_used": 0,
+            "remaining": 100,
+            "percentage": 0,
+            "planned": 0,
+            "unplanned": 0,
+            "adhoc": 0
+        }
+    
+    items = db.query(WorkItem).filter(WorkItem.week_id == week.id).all()
+    
+    planned = sum(i.assigned_points for i in items if i.type == "PLANNED")
+    unplanned = sum(i.assigned_points for i in items if i.type == "UNPLANNED")
+    adhoc = sum(i.assigned_points for i in items if i.type == "ADHOC")
+    total_used = planned + unplanned + adhoc
+    
+    return {
+        "week_start": week.week_start,
+        "week_end": week.week_end,
+        "total_used": total_used,
+        "remaining": 100 - total_used,
+        "percentage": total_used,
+        "planned": planned,
+        "unplanned": unplanned,
+        "adhoc": adhoc
+    }

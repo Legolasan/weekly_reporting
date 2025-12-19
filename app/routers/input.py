@@ -13,6 +13,7 @@ from app.crud import (
 )
 from app.schemas import WorkItemCreate, WorkItemUpdate
 from app.models.work_item import TaskType, TaskStatus
+from app.middleware import get_current_week_stats
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -66,6 +67,9 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
         for item in items
     ]
     
+    # Get sidebar stats
+    sidebar_stats = get_current_week_stats(db)
+    
     return templates.TemplateResponse("input.html", {
         "request": request,
         "week": week,
@@ -81,7 +85,8 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
         "next_week": next_week,
         "task_types": TaskType,
         "task_statuses": TaskStatus,
-        "active_page": "input"
+        "active_page": "input",
+        "sidebar_stats": sidebar_stats
     })
 
 

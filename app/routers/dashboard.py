@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.crud import get_or_create_work_week, get_work_items_by_week, get_pending_items
+from app.middleware import get_current_week_stats
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -27,6 +28,9 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
     # Get pending items from previous weeks
     pending_items = get_pending_items(db, monday)
     
+    # Get sidebar stats
+    sidebar_stats = get_current_week_stats(db)
+    
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "current_week": current_week,
@@ -37,5 +41,6 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
         "total_used": total_used,
         "remaining_points": 100 - total_used,
         "pending_items": pending_items,
-        "active_page": "dashboard"
+        "active_page": "dashboard",
+        "sidebar_stats": sidebar_stats
     })

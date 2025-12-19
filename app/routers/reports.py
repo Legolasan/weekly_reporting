@@ -8,6 +8,7 @@ from app.database import get_db
 from app.services.export import export_to_csv, export_to_excel, get_filtered_items
 from app.models.work_item import TaskType, TaskStatus
 from app.crud import get_work_weeks
+from app.middleware import get_current_week_stats
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -45,6 +46,7 @@ async def reports_page(
         status_counts[item["Status"]] = status_counts.get(item["Status"], 0) + 1
     
     all_weeks = get_work_weeks(db, limit=52)
+    sidebar_stats = get_current_week_stats(db)
     
     return templates.TemplateResponse("reports.html", {
         "request": request,
@@ -62,7 +64,8 @@ async def reports_page(
             "task_type": task_type,
             "status": status
         },
-        "active_page": "reports"
+        "active_page": "reports",
+        "sidebar_stats": sidebar_stats
     })
 
 
