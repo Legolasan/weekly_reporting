@@ -48,10 +48,29 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
     prev_week = week.week_start - timedelta(days=7)
     next_week = week.week_start + timedelta(days=7)
     
+    # Convert items to JSON-serializable format for JavaScript
+    items_json = [
+        {
+            "id": str(item.id),
+            "type": item.type,
+            "title": item.title,
+            "start_date": item.start_date.isoformat() if item.start_date else None,
+            "end_date": item.end_date.isoformat() if item.end_date else None,
+            "assigned_points": item.assigned_points,
+            "completion_points": item.completion_points,
+            "planned_work": item.planned_work,
+            "actual_work": item.actual_work,
+            "next_week_plan": item.next_week_plan,
+            "status": item.status
+        }
+        for item in items
+    ]
+    
     return templates.TemplateResponse("input.html", {
         "request": request,
         "week": week,
         "items": items,
+        "items_json": items_json,
         "all_weeks": all_weeks,
         "planned_points": planned_points,
         "unplanned_points": unplanned_points,

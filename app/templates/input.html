@@ -317,7 +317,7 @@
 </div>
 
 <script>
-const items = {{ items | tojson | safe if items else '[]' }};
+const items = {{ items_json | tojson | safe }};
 
 function editItem(itemId) {
     const item = items.find(i => i.id === itemId);
