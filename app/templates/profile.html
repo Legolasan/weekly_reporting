@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Work Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-10">
+        <h1 class="text-4xl font-bold text-white tracking-tight">Profile Settings</h1>
+        <p class="text-slate-400 mt-2 text-lg">Manage your account</p>
+    </div>
+
+    <!-- Success/Error Messages -->
+    {% if success %}
+    <div class="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-sm">
+        {{ success }}
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Account Info -->
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+            <h2 class="text-xl font-semibold text-white mb-6">Account Information</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Email</label>
+                    <p class="text-white text-lg">{{ user.email }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Account Type</label>
+                    <p class="text-white text-lg">
+                        {% if user.is_admin %}
+                        <span class="inline-flex items-center gap-2">
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-500/20 text-purple-400">Admin</span>
+                        </span>
+                        {% else %}
+                        <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-blue-500/20 text-blue-400">User</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Member Since</label>
+                    <p class="text-white text-lg">{{ user.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="mt-8 pt-6 border-t border-slate-700/50">
+                <h3 class="text-lg font-semibold text-white mb-4">Your Statistics</h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-slate-700/30 rounded-xl p-4 text-center">
+                        <p class="text-2xl font-bold text-blue-400">{{ stats.total_weeks }}</p>
+                        <p class="text-xs text-slate-400 mt-1">Weeks Tracked</p>
+                    </div>
+                    <div class="bg-slate-700/30 rounded-xl p-4 text-center">
+                        <p class="text-2xl font-bold text-emerald-400">{{ stats.total_items }}</p>
+                        <p class="text-xs text-slate-400 mt-1">Total Tasks</p>
+                    </div>
+                    <div class="bg-slate-700/30 rounded-xl p-4 text-center">
+                        <p class="text-2xl font-bold text-purple-400">{{ stats.total_points }}</p>
+                        <p class="text-xs text-slate-400 mt-1">Points Logged</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+            <h2 class="text-xl font-semibold text-white mb-6">Change Password</h2>
+            
+            <form action="/profile/change-password" method="POST" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Current Password</label>
+                    <input type="password" name="current_password" required 
+                           class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
+                           placeholder="Enter current password">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">New Password</label>
+                    <input type="password" name="new_password" required minlength="5"
+                           class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
+                           placeholder="At least 5 characters">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Confirm New Password</label>
+                    <input type="password" name="confirm_password" required minlength="5"
+                           class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
+                           placeholder="Confirm new password">
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/25">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Link -->
+    {% if user.is_admin %}
+    <div class="mt-8 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-semibold text-white">Admin Dashboard</h2>
+                <p class="text-slate-400 text-sm mt-1">View all users and manage accounts</p>
+            </div>
+            <a href="/admin" class="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                Go to Admin
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

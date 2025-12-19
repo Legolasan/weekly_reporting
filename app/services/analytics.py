@@ -1,19 +1,22 @@
 from datetime import date, timedelta
-from typing import Dict, List, Any
+from uuid import UUID
+from typing import Dict, List, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models.work_week import WorkWeek
 from app.models.work_item import WorkItem, TaskType, TaskStatus
 
 
-def get_analytics_data(db: Session, weeks_back: int = 12) -> Dict[str, Any]:
-    """Get analytics data for the specified number of weeks."""
+def get_analytics_data(db: Session, weeks_back: int = 12, user_id: Optional[UUID] = None) -> Dict[str, Any]:
+    """Get analytics data for the specified number of weeks, optionally filtered by user."""
     end_date = date.today()
     start_date = end_date - timedelta(weeks=weeks_back)
     
-    weeks = db.query(WorkWeek).filter(
-        WorkWeek.week_start >= start_date
-    ).order_by(WorkWeek.week_start).all()
+    # Base query for weeks
+    weeks_query = db.query(WorkWeek).filter(WorkWeek.week_start >= start_date)
+    if user_id:
+        weeks_query = weeks_query.filter(WorkWeek.user_id == user_id)
+    weeks = weeks_query.order_by(WorkWeek.week_start).all()
     
     # Points trend data
     points_trend = []
@@ -27,25 +30,27 @@ def get_analytics_data(db: Session, weeks_back: int = 12) -> Dict[str, Any]:
         })
     
     # Task type distribution
-    type_counts = db.query(
+    type_query = db.query(
         WorkItem.type,
         func.count(WorkItem.id).label("count"),
         func.sum(WorkItem.assigned_points).label("points")
-    ).join(WorkWeek).filter(
-        WorkWeek.week_start >= start_date
-    ).group_by(WorkItem.type).all()
+    ).join(WorkWeek).filter(WorkWeek.week_start >= start_date)
+    if user_id:
+        type_query = type_query.filter(WorkWeek.user_id == user_id)
+    type_counts = type_query.group_by(WorkItem.type).all()
     
     type_distribution = {t.value: {"count": 0, "points": 0} for t in TaskType}
     for row in type_counts:
         type_distribution[row.type] = {"count": row.count, "points": row.points or 0}
     
     # Status breakdown
-    status_counts = db.query(
+    status_query = db.query(
         WorkItem.status,
         func.count(WorkItem.id).label("count")
-    ).join(WorkWeek).filter(
-        WorkWeek.week_start >= start_date
-    ).group_by(WorkItem.status).all()
+    ).join(WorkWeek).filter(WorkWeek.week_start >= start_date)
+    if user_id:
+        status_query = status_query.filter(WorkWeek.user_id == user_id)
+    status_counts = status_query.group_by(WorkItem.status).all()
     
     status_breakdown = {s.value: 0 for s in TaskStatus}
     for row in status_counts:
@@ -55,10 +60,13 @@ def get_analytics_data(db: Session, weeks_back: int = 12) -> Dict[str, Any]:
     today = date.today()
     monday = today - timedelta(days=today.weekday())
     
-    carry_over = db.query(WorkItem).join(WorkWeek).filter(
+    carry_query = db.query(WorkItem).join(WorkWeek).filter(
         WorkItem.status.in_([TaskStatus.DELAYED.value, TaskStatus.IN_PROGRESS.value]),
         WorkWeek.week_end < monday
-    ).all()
+    )
+    if user_id:
+        carry_query = carry_query.filter(WorkWeek.user_id == user_id)
+    carry_over = carry_query.all()
     
     carry_over_data = []
     for item in carry_over:

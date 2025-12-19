@@ -1,6 +1,7 @@
 import csv
 import io
 from datetime import date
+from uuid import UUID
 from typing import List, Optional
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -14,11 +15,14 @@ def get_filtered_items(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     task_type: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    user_id: Optional[UUID] = None
 ) -> List[dict]:
     """Get work items with filters applied."""
     query = db.query(WorkItem).join(WorkWeek)
     
+    if user_id:
+        query = query.filter(WorkWeek.user_id == user_id)
     if start_date:
         query = query.filter(WorkWeek.week_start >= start_date)
     if end_date:
@@ -51,10 +55,11 @@ def export_to_csv(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     task_type: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    user_id: Optional[UUID] = None
 ) -> str:
     """Export filtered items to CSV string."""
-    items = get_filtered_items(db, start_date, end_date, task_type, status)
+    items = get_filtered_items(db, start_date, end_date, task_type, status, user_id)
     
     if not items:
         return "No data found"
@@ -72,10 +77,11 @@ def export_to_excel(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     task_type: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    user_id: Optional[UUID] = None
 ) -> bytes:
     """Export filtered items to Excel bytes."""
-    items = get_filtered_items(db, start_date, end_date, task_type, status)
+    items = get_filtered_items(db, start_date, end_date, task_type, status, user_id)
     
     wb = Workbook()
     ws = wb.active

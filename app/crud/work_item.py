@@ -86,4 +86,14 @@ def get_pending_items(db: Session, before_date: date) -> List[WorkItem]:
     ).order_by(WorkItem.created_at.desc()).all()
 
 
+def get_pending_items_for_user(db: Session, before_date: date, user_id: UUID) -> List[WorkItem]:
+    """Get items that are delayed or in progress from previous weeks for a specific user."""
+    from app.models.work_week import WorkWeek
+    return db.query(WorkItem).join(WorkItem.work_week).filter(
+        WorkItem.status.in_([TaskStatus.DELAYED.value, TaskStatus.IN_PROGRESS.value, TaskStatus.TODO.value]),
+        WorkWeek.week_end < before_date,
+        WorkWeek.user_id == user_id
+    ).order_by(WorkItem.created_at.desc()).all()
+
+
 from app.models.work_week import WorkWeek

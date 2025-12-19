@@ -1,17 +1,23 @@
 from datetime import date, timedelta
+from uuid import UUID
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 
-def get_current_week_stats(db):
-    """Get current week's points statistics."""
+def get_current_week_stats(db, user_id: UUID = None):
+    """Get current week's points statistics for a user."""
     from app.models.work_week import WorkWeek
     from app.models.work_item import WorkItem
     
     today = date.today()
     monday = today - timedelta(days=today.weekday())
     
-    week = db.query(WorkWeek).filter(WorkWeek.week_start == monday).first()
+    # Build query with user filter
+    query = db.query(WorkWeek).filter(WorkWeek.week_start == monday)
+    if user_id:
+        query = query.filter(WorkWeek.user_id == user_id)
+    
+    week = query.first()
     
     if not week:
         return {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v1.1.0 - Updated sidebar design -->
+<!-- v2.0.0 - Added authentication, user profiles, admin dashboard -->
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -146,6 +146,45 @@
                         {% endif %}
                     </a>
                 </nav>
+                
+                <!-- Account Section -->
+                <p class="px-3 mt-6 text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-4">Account</p>
+                <nav class="space-y-1.5">
+                    <a href="/profile" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group {% if active_page == 'profile' %}bg-gradient-to-r from-blue-600/90 to-blue-700/90 text-white shadow-lg shadow-blue-600/20{% else %}text-slate-400 hover:bg-slate-800/60 hover:text-white{% endif %}">
+                        <div class="{% if active_page == 'profile' %}text-white{% else %}text-slate-500 group-hover:text-cyan-400{% endif %} transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <span class="font-semibold text-sm">Profile</span>
+                        {% if active_page == 'profile' %}
+                        <div class="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>
+                        {% endif %}
+                    </a>
+                    
+                    {% if user and user.is_admin %}
+                    <a href="/admin" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group {% if active_page == 'admin' %}bg-gradient-to-r from-purple-600/90 to-purple-700/90 text-white shadow-lg shadow-purple-600/20{% else %}text-slate-400 hover:bg-slate-800/60 hover:text-white{% endif %}">
+                        <div class="{% if active_page == 'admin' %}text-white{% else %}text-slate-500 group-hover:text-purple-400{% endif %} transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </div>
+                        <span class="font-semibold text-sm">Admin</span>
+                        {% if active_page == 'admin' %}
+                        <div class="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>
+                        {% endif %}
+                    </a>
+                    {% endif %}
+                    
+                    <a href="/logout" class="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group text-slate-400 hover:bg-red-500/10 hover:text-red-400">
+                        <div class="text-slate-500 group-hover:text-red-400 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                        </div>
+                        <span class="font-semibold text-sm">Logout</span>
+                    </a>
+                </nav>
             </div>
             
             <!-- Info Card - Dynamic Current Week Stats -->
@@ -187,8 +226,24 @@
                 </div>
             </div>
             
-            <!-- Footer -->
+            <!-- User Info Footer -->
             <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800/60 bg-slate-950/50">
+                {% if user %}
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-semibold text-sm">
+                        {{ user.email[0].upper() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-medium text-white truncate">{{ user.email }}</p>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span class="text-[10px] text-slate-500">
+                                {% if user.is_admin %}Admin{% else %}User{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -196,6 +251,7 @@
                     </div>
                     <span class="text-[10px] text-slate-600">v1.0.0</span>
                 </div>
+                {% endif %}
             </div>
         </nav>
 

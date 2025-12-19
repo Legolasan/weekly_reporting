@@ -14,6 +14,7 @@ from app.crud import (
 from app.schemas import WorkItemCreate, WorkItemUpdate
 from app.models.work_item import TaskType, TaskStatus
 from app.middleware import get_current_week_stats
+from app.auth import get_current_user_from_cookie
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -25,19 +26,27 @@ def parse_date(date_str: str) -> date:
 
 @router.get("/input")
 async def input_page(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    
     today = date.today()
-    current_week = get_or_create_work_week(db, today)
+    current_week = get_or_create_work_week(db, today, user.id)
     return RedirectResponse(url=f"/input/{current_week.week_start}", status_code=302)
 
 
 @router.get("/input/{week_start}")
 async def input_page_for_week(request: Request, week_start: str, db: Session = Depends(get_db)):
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    
     week_start_date = parse_date(week_start)
-    week = get_or_create_work_week(db, week_start_date)
+    week = get_or_create_work_week(db, week_start_date, user.id)
     items = get_work_items_by_week(db, week.id)
     
-    # Get all weeks for dropdown
-    all_weeks = get_work_weeks(db, limit=52)
+    # Get all weeks for dropdown (for this user)
+    all_weeks = get_work_weeks(db, user.id, limit=52)
     
     # Calculate points
     planned_points = sum(i.assigned_points for i in items if i.type == "PLANNED")
@@ -69,10 +78,11 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
     ]
     
     # Get sidebar stats
-    sidebar_stats = get_current_week_stats(db)
+    sidebar_stats = get_current_week_stats(db, user.id)
     
     return templates.TemplateResponse("input.html", {
         "request": request,
+        "user": user,
         "week": week,
         "items": items,
         "items_json": items_json,
@@ -115,6 +125,10 @@ async def create_item(
     status: str = Form("TODO"),
     db: Session = Depends(get_db)
 ):
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    
     try:
         item_data = WorkItemCreate(
             week_id=week_id,
@@ -142,6 +156,7 @@ async def create_item(
 @router.post("/api/work-items/{item_id}")
 async def update_item(
     item_id: UUID,
+    request: Request,
     type: str = Form(...),
     title: str = Form(...),
     assigned_points: str = Form(...),
@@ -155,6 +170,10 @@ async def update_item(
     status: str = Form("TODO"),
     db: Session = Depends(get_db)
 ):
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    
     try:
         item_data = WorkItemUpdate(
             type=TaskType(type),
@@ -179,7 +198,11 @@ async def update_item(
 
 
 @router.post("/api/work-items/{item_id}/delete")
-async def delete_item(item_id: UUID, db: Session = Depends(get_db)):
+async def delete_item(item_id: UUID, request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    
     item = get_work_item(db, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
