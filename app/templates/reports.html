@@ -4,22 +4,22 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-white">Reports</h1>
-            <p class="text-slate-400 mt-1">Export and view work item data</p>
+            <h1 class="text-4xl font-bold text-white tracking-tight">Reports</h1>
+            <p class="text-slate-400 mt-2 text-lg">Export and view work item data</p>
         </div>
         <div class="flex gap-3">
             <a href="/reports/export/csv?start_date={{ filters.start_date or '' }}&end_date={{ filters.end_date or '' }}&task_type={{ filters.task_type or '' }}&status={{ filters.status or '' }}" 
-               class="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors border border-slate-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
                 Download CSV
             </a>
             <a href="/reports/export/excel?start_date={{ filters.start_date or '' }}&end_date={{ filters.end_date or '' }}&task_type={{ filters.task_type or '' }}&status={{ filters.status or '' }}" 
-               class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-medium transition-all shadow-lg shadow-green-500/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
                 Download Excel
@@ -28,21 +28,21 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6 mb-8">
+    <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-10">
         <form method="GET" class="flex flex-wrap items-end gap-4">
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Start Date</label>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Start Date</label>
                 <input type="date" name="start_date" value="{{ filters.start_date or '' }}" 
-                       class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                       class="bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">End Date</label>
+                <label class="block text-sm font-medium text-slate-300 mb-2">End Date</label>
                 <input type="date" name="end_date" value="{{ filters.end_date or '' }}" 
-                       class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                       class="bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Task Type</label>
-                <select name="task_type" class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Task Type</label>
+                <select name="task_type" class="bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
                     <option value="">All Types</option>
                     <option value="PLANNED" {% if filters.task_type == 'PLANNED' %}selected{% endif %}>Planned</option>
                     <option value="UNPLANNED" {% if filters.task_type == 'UNPLANNED' %}selected{% endif %}>Unplanned</option>
@@ -50,8 +50,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Status</label>
-                <select name="status" class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                <select name="status" class="bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
                     <option value="">All Statuses</option>
                     <option value="TODO" {% if filters.status == 'TODO' %}selected{% endif %}>To Do</option>
                     <option value="IN_PROGRESS" {% if filters.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
@@ -61,81 +61,87 @@
                     <option value="ABANDONED" {% if filters.status == 'ABANDONED' %}selected{% endif %}>Abandoned</option>
                 </select>
             </div>
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/20">
                 Apply Filters
             </button>
-            <a href="/reports" class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">
+            <a href="/reports" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-semibold transition-colors">
                 Clear
             </a>
         </form>
     </div>
 
     <!-- Summary Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-4">
-            <p class="text-slate-400 text-sm">Total Items</p>
-            <p class="text-2xl font-bold text-white">{{ total_items }}</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-5 hover-lift">
+            <p class="text-slate-400 text-sm font-medium mb-1">Total Items</p>
+            <p class="text-3xl font-bold text-white">{{ total_items }}</p>
         </div>
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-4">
-            <p class="text-slate-400 text-sm">Total Points</p>
-            <p class="text-2xl font-bold text-blue-400">{{ total_points }}</p>
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-5 hover-lift">
+            <p class="text-slate-400 text-sm font-medium mb-1">Total Points</p>
+            <p class="text-3xl font-bold text-blue-400">{{ total_points }}</p>
         </div>
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-4">
-            <p class="text-slate-400 text-sm">By Type</p>
-            <div class="flex gap-2 mt-1">
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-5 hover-lift">
+            <p class="text-slate-400 text-sm font-medium mb-2">By Type</p>
+            <div class="flex flex-wrap gap-2">
                 {% for t, count in type_counts.items() %}
-                <span class="text-xs px-2 py-0.5 rounded {% if t == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif t == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
+                <span class="px-2.5 py-1 text-xs font-semibold rounded-lg {% if t == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif t == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
                     {{ count }}
                 </span>
                 {% endfor %}
             </div>
         </div>
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-4">
-            <p class="text-slate-400 text-sm">Completed</p>
-            <p class="text-2xl font-bold text-green-400">{{ status_counts.get('COMPLETED', 0) }}</p>
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-5 hover-lift">
+            <p class="text-slate-400 text-sm font-medium mb-1">Completed</p>
+            <p class="text-3xl font-bold text-green-400">{{ status_counts.get('COMPLETED', 0) }}</p>
         </div>
     </div>
 
     <!-- Data Table -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+    <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full">
-                <thead class="bg-slate-700">
+                <thead class="bg-slate-700/50">
                     <tr class="text-left text-slate-300 text-sm">
-                        <th class="px-6 py-4 font-medium">Week</th>
-                        <th class="px-6 py-4 font-medium">Title</th>
-                        <th class="px-6 py-4 font-medium">Type</th>
-                        <th class="px-6 py-4 font-medium">Status</th>
-                        <th class="px-6 py-4 font-medium">Points</th>
-                        <th class="px-6 py-4 font-medium">Planned Work</th>
-                        <th class="px-6 py-4 font-medium">Actual Work</th>
+                        <th class="px-6 py-4 font-semibold">Week</th>
+                        <th class="px-6 py-4 font-semibold">Title</th>
+                        <th class="px-6 py-4 font-semibold">Type</th>
+                        <th class="px-6 py-4 font-semibold">Status</th>
+                        <th class="px-6 py-4 font-semibold">Points</th>
+                        <th class="px-6 py-4 font-semibold">Planned Work</th>
+                        <th class="px-6 py-4 font-semibold">Actual Work</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-700">
+                <tbody class="divide-y divide-slate-700/50">
                     {% if items %}
                     {% for item in items %}
-                    <tr class="text-slate-300 hover:bg-slate-700/50">
-                        <td class="px-6 py-4 text-sm whitespace-nowrap">{{ item['Week Start'] }}</td>
+                    <tr class="text-slate-300 hover:bg-slate-700/30 transition-colors">
+                        <td class="px-6 py-4 text-sm whitespace-nowrap text-slate-500">{{ item['Week Start'] }}</td>
                         <td class="px-6 py-4 font-medium text-white">{{ item['Title'] }}</td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-0.5 text-xs font-medium rounded {% if item['Type'] == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item['Type'] == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg {% if item['Type'] == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item['Type'] == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
                                 {{ item['Type'] }}
                             </span>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-0.5 text-xs font-medium rounded {% if item['Status'] == 'COMPLETED' %}bg-green-500/20 text-green-400{% elif item['Status'] == 'IN_PROGRESS' %}bg-blue-500/20 text-blue-400{% elif item['Status'] == 'DELAYED' %}bg-red-500/20 text-red-400{% else %}bg-slate-600 text-slate-300{% endif %}">
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-lg {% if item['Status'] == 'COMPLETED' %}bg-green-500/20 text-green-400{% elif item['Status'] == 'IN_PROGRESS' %}bg-blue-500/20 text-blue-400{% elif item['Status'] == 'DELAYED' %}bg-red-500/20 text-red-400{% else %}bg-slate-600/50 text-slate-300{% endif %}">
                                 {{ item['Status'].replace('_', ' ') }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 font-medium">{{ item['Assigned Points'] }}</td>
-                        <td class="px-6 py-4 text-sm max-w-xs truncate">{{ item['Planned Work'] or '-' }}</td>
-                        <td class="px-6 py-4 text-sm max-w-xs truncate">{{ item['Actual Work'] or '-' }}</td>
+                        <td class="px-6 py-4 font-semibold text-white">{{ item['Assigned Points'] }}</td>
+                        <td class="px-6 py-4 text-sm max-w-xs truncate text-slate-400">{{ item['Planned Work'] or '-' }}</td>
+                        <td class="px-6 py-4 text-sm max-w-xs truncate text-slate-400">{{ item['Actual Work'] or '-' }}</td>
                     </tr>
                     {% endfor %}
                     {% else %}
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
-                            No data found. Try adjusting your filters or add some work items.
+                        <td colspan="7" class="px-6 py-16 text-center">
+                            <div class="w-16 h-16 bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-slate-400 text-lg font-medium">No data found</p>
+                            <p class="text-slate-500 text-sm mt-1">Try adjusting your filters or add some work items</p>
                         </td>
                     </tr>
                     {% endif %}

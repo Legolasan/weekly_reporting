@@ -4,34 +4,47 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-white">Dashboard</h1>
-        <p class="text-slate-400 mt-1">Week of {{ current_week.week_start.strftime('%b %d') }} - {{ current_week.week_end.strftime('%b %d, %Y') }}</p>
+    <!-- Header -->
+    <div class="mb-10">
+        <div class="flex items-center gap-2 text-sm text-slate-500 mb-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span>Week of {{ current_week.week_start.strftime('%B %d') }} - {{ current_week.week_end.strftime('%B %d, %Y') }}</span>
+        </div>
+        <h1 class="text-4xl font-bold text-white tracking-tight">Dashboard</h1>
+        <p class="text-slate-400 mt-2 text-lg">Track your weekly progress and productivity</p>
     </div>
 
     <!-- Points Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <!-- Total Progress -->
-        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-slate-400 text-sm font-medium">Points Used</h3>
-                <span class="text-2xl font-bold text-white">{{ total_used }}/100</span>
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover-lift">
+            <div class="flex items-center justify-between mb-5">
+                <div class="p-3 bg-blue-500/10 rounded-xl">
+                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <span class="text-3xl font-bold text-white">{{ total_used }}<span class="text-lg text-slate-500">/100</span></span>
             </div>
-            <div class="w-full bg-slate-700 rounded-full h-3">
-                <div class="bg-blue-500 h-3 rounded-full transition-all duration-500" style="width: {{ total_used }}%"></div>
+            <div class="relative w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
+                <div class="absolute inset-0 shimmer"></div>
+                <div class="bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full transition-all duration-700 relative" style="width: {{ total_used }}%"></div>
             </div>
-            <p class="text-sm text-slate-400 mt-2">{{ remaining_points }} points remaining</p>
+            <p class="text-sm text-slate-400 mt-3 font-medium">{{ remaining_points }} points remaining</p>
         </div>
 
         <!-- Planned -->
-        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover-lift group">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-slate-400 text-sm font-medium">Planned</h3>
-                    <p class="text-3xl font-bold text-emerald-400 mt-1">{{ planned_points }}</p>
+                    <p class="text-sm font-medium text-slate-400 mb-1">Planned</p>
+                    <p class="text-4xl font-bold text-white">{{ planned_points }}</p>
+                    <p class="text-sm text-emerald-400 mt-1 font-medium">points</p>
                 </div>
-                <div class="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                     </svg>
                 </div>
@@ -39,14 +52,15 @@
         </div>
 
         <!-- Unplanned -->
-        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover-lift group">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-slate-400 text-sm font-medium">Unplanned</h3>
-                    <p class="text-3xl font-bold text-amber-400 mt-1">{{ unplanned_points }}</p>
+                    <p class="text-sm font-medium text-slate-400 mb-1">Unplanned</p>
+                    <p class="text-4xl font-bold text-white">{{ unplanned_points }}</p>
+                    <p class="text-sm text-amber-400 mt-1 font-medium">points</p>
                 </div>
-                <div class="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
@@ -54,14 +68,15 @@
         </div>
 
         <!-- Ad-Hoc -->
-        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover-lift group">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-slate-400 text-sm font-medium">Ad-Hoc</h3>
-                    <p class="text-3xl font-bold text-purple-400 mt-1">{{ adhoc_points }}</p>
+                    <p class="text-sm font-medium text-slate-400 mb-1">Ad-Hoc</p>
+                    <p class="text-4xl font-bold text-white">{{ adhoc_points }}</p>
+                    <p class="text-sm text-purple-400 mt-1 font-medium">points</p>
                 </div>
-                <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
@@ -71,75 +86,97 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Current Week Items -->
-        <div class="bg-slate-800 rounded-xl border border-slate-700">
-            <div class="p-6 border-b border-slate-700 flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-white">This Week's Tasks</h2>
-                <a href="/input/{{ current_week.week_start }}" class="text-sm text-blue-400 hover:text-blue-300">Add Task</a>
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
+            <div class="p-6 border-b border-slate-700/50 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-white">This Week's Tasks</h2>
+                    <p class="text-sm text-slate-400 mt-1">{{ items|length }} items</p>
+                </div>
+                <a href="/input/{{ current_week.week_start }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-blue-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Task
+                </a>
             </div>
-            <div class="p-6">
+            <div class="p-6 max-h-96 overflow-y-auto">
                 {% if items %}
                 <div class="space-y-4">
                     {% for item in items %}
-                    <div class="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
+                    <div class="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border border-slate-600/30 hover:border-slate-500/50 transition-colors">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.type == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item.type == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-lg {% if item.type == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item.type == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
                                     {{ item.type }}
                                 </span>
-                                <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.status == 'COMPLETED' %}bg-green-500/20 text-green-400{% elif item.status == 'IN_PROGRESS' %}bg-blue-500/20 text-blue-400{% elif item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% else %}bg-slate-600 text-slate-300{% endif %}">
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-lg {% if item.status == 'COMPLETED' %}bg-green-500/20 text-green-400{% elif item.status == 'IN_PROGRESS' %}bg-blue-500/20 text-blue-400{% elif item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% else %}bg-slate-600/50 text-slate-300{% endif %}">
                                     {{ item.status.replace('_', ' ') }}
                                 </span>
                             </div>
-                            <h3 class="text-white font-medium mt-1">{{ item.title }}</h3>
+                            <h3 class="text-white font-medium">{{ item.title }}</h3>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xl font-bold text-white">{{ item.assigned_points }}</span>
-                            <span class="text-slate-400 text-sm">pts</span>
+                        <div class="text-right ml-4">
+                            <span class="text-2xl font-bold text-white">{{ item.assigned_points }}</span>
+                            <span class="text-slate-400 text-sm ml-1">pts</span>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <div class="text-center py-8">
-                    <p class="text-slate-400">No tasks for this week yet.</p>
-                    <a href="/input/{{ current_week.week_start }}" class="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Add First Task</a>
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <p class="text-slate-400 text-lg mb-2">No tasks for this week yet</p>
+                    <a href="/input/{{ current_week.week_start }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add First Task
+                    </a>
                 </div>
                 {% endif %}
             </div>
         </div>
 
         <!-- Pending from Previous Weeks -->
-        <div class="bg-slate-800 rounded-xl border border-slate-700">
-            <div class="p-6 border-b border-slate-700">
-                <h2 class="text-lg font-semibold text-white">Pending from Previous Weeks</h2>
+        <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
+            <div class="p-6 border-b border-slate-700/50">
+                <h2 class="text-xl font-semibold text-white">Pending from Previous Weeks</h2>
+                <p class="text-sm text-slate-400 mt-1">Tasks requiring attention</p>
             </div>
-            <div class="p-6">
+            <div class="p-6 max-h-96 overflow-y-auto">
                 {% if pending_items %}
                 <div class="space-y-4">
                     {% for item in pending_items[:5] %}
-                    <div class="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg border-l-4 {% if item.status == 'DELAYED' %}border-red-500{% else %}border-amber-500{% endif %}">
+                    <div class="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl border-l-4 {% if item.status == 'DELAYED' %}border-red-500{% else %}border-amber-500{% endif %}">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% else %}bg-amber-500/20 text-amber-400{% endif %}">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-lg {% if item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% else %}bg-amber-500/20 text-amber-400{% endif %}">
                                     {{ item.status.replace('_', ' ') }}
                                 </span>
-                                <span class="text-xs text-slate-400">{{ item.work_week.week_start.strftime('%b %d') }}</span>
+                                <span class="text-xs text-slate-500 font-medium">{{ item.work_week.week_start.strftime('%b %d') }}</span>
                             </div>
-                            <h3 class="text-white font-medium mt-1">{{ item.title }}</h3>
+                            <h3 class="text-white font-medium">{{ item.title }}</h3>
                         </div>
-                        <span class="text-lg font-bold text-white">{{ item.assigned_points }} pts</span>
+                        <span class="text-xl font-bold text-white ml-4">{{ item.assigned_points }} <span class="text-sm text-slate-400">pts</span></span>
                     </div>
                     {% endfor %}
                 </div>
                 {% if pending_items|length > 5 %}
-                <p class="text-sm text-slate-400 mt-4 text-center">+{{ pending_items|length - 5 }} more items</p>
+                <p class="text-sm text-slate-500 mt-4 text-center font-medium">+{{ pending_items|length - 5 }} more pending items</p>
                 {% endif %}
                 {% else %}
-                <div class="text-center py-8">
-                    <svg class="w-12 h-12 text-green-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-slate-400">No pending items from previous weeks!</p>
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-slate-400 text-lg">All caught up!</p>
+                    <p class="text-slate-500 text-sm mt-1">No pending items from previous weeks</p>
                 </div>
                 {% endif %}
             </div>

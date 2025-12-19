@@ -5,26 +5,26 @@
 {% block content %}
 <div class="max-w-7xl mx-auto">
     <!-- Header with Week Navigation -->
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-white">Work Items</h1>
-            <p class="text-slate-400 mt-1">Manage tasks for the selected week</p>
+            <h1 class="text-4xl font-bold text-white tracking-tight">Work Items</h1>
+            <p class="text-slate-400 mt-2 text-lg">Manage tasks for the selected week</p>
         </div>
-        <div class="flex items-center gap-4">
-            <a href="/input/{{ prev_week }}" class="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex items-center gap-3">
+            <a href="/input/{{ prev_week }}" class="p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-700/50 hover:border-slate-600 transition-all">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
             </a>
-            <select id="weekSelector" onchange="window.location.href='/input/' + this.value" class="bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+            <select id="weekSelector" onchange="window.location.href='/input/' + this.value" class="bg-slate-800/50 border border-slate-700/50 rounded-xl px-5 py-3 text-white font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[250px]">
                 {% for w in all_weeks %}
                 <option value="{{ w.week_start }}" {% if w.week_start == week.week_start %}selected{% endif %}>
                     {{ w.week_start.strftime('%b %d') }} - {{ w.week_end.strftime('%b %d, %Y') }}
                 </option>
                 {% endfor %}
             </select>
-            <a href="/input/{{ next_week }}" class="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="/input/{{ next_week }}" class="p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-700/50 hover:border-slate-600 transition-all">
+                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
             </a>
@@ -32,37 +32,41 @@
     </div>
 
     <!-- Points Summary Bar -->
-    <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-8">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-white">Points Summary</h3>
-            <span class="text-2xl font-bold text-white">{{ total_used }}/100</span>
+    <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 mb-10">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-semibold text-white">Points Allocation</h3>
+            <div class="text-right">
+                <span class="text-3xl font-bold text-white">{{ total_used }}</span>
+                <span class="text-slate-400 text-lg">/100</span>
+            </div>
         </div>
-        <div class="w-full bg-slate-700 rounded-full h-4 mb-4 overflow-hidden flex">
+        <div class="w-full bg-slate-700/50 rounded-full h-4 mb-5 overflow-hidden flex">
             {% if planned_points > 0 %}
-            <div class="bg-emerald-500 h-4 transition-all" style="width: {{ planned_points }}%"></div>
+            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-4 transition-all duration-500" style="width: {{ planned_points }}%"></div>
             {% endif %}
             {% if unplanned_points > 0 %}
-            <div class="bg-amber-500 h-4 transition-all" style="width: {{ unplanned_points }}%"></div>
+            <div class="bg-gradient-to-r from-amber-500 to-amber-400 h-4 transition-all duration-500" style="width: {{ unplanned_points }}%"></div>
             {% endif %}
             {% if adhoc_points > 0 %}
-            <div class="bg-purple-500 h-4 transition-all" style="width: {{ adhoc_points }}%"></div>
+            <div class="bg-gradient-to-r from-purple-500 to-purple-400 h-4 transition-all duration-500" style="width: {{ adhoc_points }}%"></div>
             {% endif %}
         </div>
-        <div class="flex items-center gap-6 text-sm">
+        <div class="flex flex-wrap items-center gap-6 text-sm">
             <div class="flex items-center gap-2">
                 <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
-                <span class="text-slate-300">Planned: {{ planned_points }}</span>
+                <span class="text-slate-300 font-medium">Planned: <span class="text-white">{{ planned_points }}</span></span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="w-3 h-3 bg-amber-500 rounded-full"></span>
-                <span class="text-slate-300">Unplanned: {{ unplanned_points }}</span>
+                <span class="text-slate-300 font-medium">Unplanned: <span class="text-white">{{ unplanned_points }}</span></span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
-                <span class="text-slate-300">Ad-Hoc: {{ adhoc_points }}</span>
+                <span class="text-slate-300 font-medium">Ad-Hoc: <span class="text-white">{{ adhoc_points }}</span></span>
             </div>
-            <div class="ml-auto">
-                <span class="text-blue-400 font-medium">Remaining: {{ remaining_points }} points</span>
+            <div class="ml-auto flex items-center gap-2">
+                <span class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+                <span class="text-blue-400 font-semibold">Remaining: {{ remaining_points }} points</span>
             </div>
         </div>
     </div>
@@ -70,16 +74,17 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Add New Item Form -->
         <div class="lg:col-span-1">
-            <div class="bg-slate-800 rounded-xl border border-slate-700 sticky top-8">
-                <div class="p-6 border-b border-slate-700">
-                    <h2 class="text-lg font-semibold text-white">Add Work Item</h2>
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 sticky top-8">
+                <div class="p-6 border-b border-slate-700/50">
+                    <h2 class="text-xl font-semibold text-white">Add Work Item</h2>
+                    <p class="text-sm text-slate-400 mt-1">Create a new task</p>
                 </div>
-                <form action="/api/work-items" method="POST" class="p-6 space-y-4">
+                <form action="/api/work-items" method="POST" class="p-6 space-y-5">
                     <input type="hidden" name="week_id" value="{{ week.id }}">
                     
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Type</label>
-                        <select name="type" required class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Type</label>
+                        <select name="type" required class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="PLANNED">Planned</option>
                             <option value="UNPLANNED">Unplanned</option>
                             <option value="ADHOC">Ad-Hoc</option>
@@ -87,35 +92,35 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Title</label>
-                        <input type="text" name="title" required class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="Task title">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Title</label>
+                        <input type="text" name="title" required class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter task title">
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-1">Start Date</label>
-                            <input type="date" name="start_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Start Date</label>
+                            <input type="date" name="start_date" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-1">End Date</label>
-                            <input type="date" name="end_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                            <label class="block text-sm font-medium text-slate-300 mb-2">End Date</label>
+                            <input type="date" name="end_date" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-1">Points</label>
-                            <input type="number" name="assigned_points" required min="0" max="{{ remaining_points }}" value="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Points</label>
+                            <input type="number" name="assigned_points" required min="0" max="{{ remaining_points }}" value="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-1">Completion Pts</label>
-                            <input type="number" name="completion_points" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="For planned">
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Completion</label>
+                            <input type="number" name="completion_points" min="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Status</label>
-                        <select name="status" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                        <select name="status" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="TODO">To Do</option>
                             <option value="IN_PROGRESS">In Progress</option>
                             <option value="HOLD">Hold</option>
@@ -126,21 +131,24 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Planned Work</label>
-                        <textarea name="planned_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="What was planned?"></textarea>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Planned Work</label>
+                        <textarea name="planned_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="What was planned?"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Actual Work</label>
-                        <textarea name="actual_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="What was actually done?"></textarea>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Actual Work</label>
+                        <textarea name="actual_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="What was actually done?"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Next Week Plan</label>
-                        <textarea name="next_week_plan" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white" placeholder="Plan for next week"></textarea>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Next Week Plan</label>
+                        <textarea name="next_week_plan" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="Plan for next week"></textarea>
                     </div>
 
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
                         Add Work Item
                     </button>
                 </form>
@@ -149,38 +157,42 @@
 
         <!-- Items List -->
         <div class="lg:col-span-2">
-            <div class="bg-slate-800 rounded-xl border border-slate-700">
-                <div class="p-6 border-b border-slate-700">
-                    <h2 class="text-lg font-semibold text-white">Work Items ({{ items|length }})</h2>
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50">
+                <div class="p-6 border-b border-slate-700/50">
+                    <h2 class="text-xl font-semibold text-white">Work Items</h2>
+                    <p class="text-sm text-slate-400 mt-1">{{ items|length }} items for this week</p>
                 </div>
                 <div class="p-6">
                     {% if items %}
-                    <div class="space-y-4">
+                    <div class="space-y-5">
                         {% for item in items %}
-                        <div class="bg-slate-700/50 rounded-xl p-6 border border-slate-600">
+                        <div class="bg-slate-700/30 rounded-2xl p-6 border border-slate-600/30 hover:border-slate-500/50 transition-all hover-lift">
                             <div class="flex items-start justify-between mb-4">
                                 <div>
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.type == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item.type == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
+                                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                                        <span class="px-3 py-1 text-xs font-semibold rounded-lg {% if item.type == 'PLANNED' %}bg-emerald-500/20 text-emerald-400{% elif item.type == 'UNPLANNED' %}bg-amber-500/20 text-amber-400{% else %}bg-purple-500/20 text-purple-400{% endif %}">
                                             {{ item.type }}
                                         </span>
-                                        <span class="px-2 py-0.5 text-xs font-medium rounded {% if item.status == 'COMPLETED' %}bg-green-500/20 text-green-400{% elif item.status == 'IN_PROGRESS' %}bg-blue-500/20 text-blue-400{% elif item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% elif item.status == 'HOLD' %}bg-yellow-500/20 text-yellow-400{% else %}bg-slate-600 text-slate-300{% endif %}">
+                                        <span class="px-3 py-1 text-xs font-semibold rounded-lg {% if item.status == 'COMPLETED' %}bg-green-500/20 text-green-400{% elif item.status == 'IN_PROGRESS' %}bg-blue-500/20 text-blue-400{% elif item.status == 'DELAYED' %}bg-red-500/20 text-red-400{% elif item.status == 'HOLD' %}bg-yellow-500/20 text-yellow-400{% else %}bg-slate-600/50 text-slate-300{% endif %}">
                                             {{ item.status.replace('_', ' ') }}
                                         </span>
                                     </div>
                                     <h3 class="text-xl font-semibold text-white">{{ item.title }}</h3>
                                 </div>
-                                <div class="text-right">
+                                <div class="text-right flex-shrink-0 ml-4">
                                     <span class="text-3xl font-bold text-white">{{ item.assigned_points }}</span>
-                                    <span class="text-slate-400">pts</span>
+                                    <span class="text-slate-400 text-sm ml-1">pts</span>
                                     {% if item.completion_points %}
-                                    <p class="text-sm text-slate-400">Completed: {{ item.completion_points }}</p>
+                                    <p class="text-sm text-slate-500 mt-1">Completed: {{ item.completion_points }}</p>
                                     {% endif %}
                                 </div>
                             </div>
 
                             {% if item.start_date or item.end_date %}
-                            <p class="text-sm text-slate-400 mb-3">
+                            <p class="text-sm text-slate-500 mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
                                 {% if item.start_date %}{{ item.start_date.strftime('%b %d') }}{% endif %}
                                 {% if item.start_date and item.end_date %} - {% endif %}
                                 {% if item.end_date %}{{ item.end_date.strftime('%b %d, %Y') }}{% endif %}
@@ -188,42 +200,54 @@
                             {% endif %}
 
                             {% if item.planned_work %}
-                            <div class="mb-3">
-                                <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Planned Work</p>
-                                <p class="text-slate-300 text-sm">{{ item.planned_work }}</p>
+                            <div class="mb-4 p-4 bg-slate-800/50 rounded-xl">
+                                <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Planned Work</p>
+                                <p class="text-slate-300 text-sm leading-relaxed">{{ item.planned_work }}</p>
                             </div>
                             {% endif %}
 
                             {% if item.actual_work %}
-                            <div class="mb-3">
-                                <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Actual Work</p>
-                                <p class="text-slate-300 text-sm">{{ item.actual_work }}</p>
+                            <div class="mb-4 p-4 bg-slate-800/50 rounded-xl">
+                                <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Actual Work</p>
+                                <p class="text-slate-300 text-sm leading-relaxed">{{ item.actual_work }}</p>
                             </div>
                             {% endif %}
 
                             {% if item.next_week_plan %}
-                            <div class="mb-3">
-                                <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Next Week</p>
-                                <p class="text-slate-300 text-sm">{{ item.next_week_plan }}</p>
+                            <div class="mb-4 p-4 bg-slate-800/50 rounded-xl">
+                                <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">Next Week</p>
+                                <p class="text-slate-300 text-sm leading-relaxed">{{ item.next_week_plan }}</p>
                             </div>
                             {% endif %}
 
-                            <div class="flex items-center gap-2 mt-4 pt-4 border-t border-slate-600">
-                                <button onclick="editItem('{{ item.id }}')" class="px-3 py-1.5 bg-slate-600 text-white text-sm rounded-lg hover:bg-slate-500 transition-colors">Edit</button>
+                            <div class="flex items-center gap-3 pt-4 border-t border-slate-600/30">
+                                <button onclick="editItem('{{ item.id }}')" class="px-4 py-2 bg-slate-600/50 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit
+                                </button>
                                 <form action="/api/work-items/{{ item.id }}/delete" method="POST" class="inline" onsubmit="return confirm('Delete this item?')">
-                                    <button type="submit" class="px-3 py-1.5 bg-red-600/20 text-red-400 text-sm rounded-lg hover:bg-red-600/30 transition-colors">Delete</button>
+                                    <button type="submit" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Delete
+                                    </button>
                                 </form>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-12">
-                        <svg class="w-16 h-16 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                        <p class="text-slate-400 text-lg">No work items for this week</p>
-                        <p class="text-slate-500 text-sm mt-1">Add your first task using the form</p>
+                    <div class="text-center py-16">
+                        <div class="w-20 h-20 bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                            <svg class="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <p class="text-slate-400 text-xl font-medium mb-2">No work items yet</p>
+                        <p class="text-slate-500">Add your first task using the form</p>
                     </div>
                     {% endif %}
                 </div>
@@ -233,29 +257,32 @@
 </div>
 
 <!-- Edit Modal -->
-<div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        <div class="p-6 border-b border-slate-700 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-white">Edit Work Item</h2>
-            <button onclick="closeModal()" class="text-slate-400 hover:text-white">
+<div id="editModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="p-6 border-b border-slate-700 flex items-center justify-between sticky top-0 bg-slate-800 z-10">
+            <div>
+                <h2 class="text-xl font-semibold text-white">Edit Work Item</h2>
+                <p class="text-sm text-slate-400 mt-1">Update task details</p>
+            </div>
+            <button onclick="closeModal()" class="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
         </div>
-        <form id="editForm" method="POST" class="p-6 space-y-4">
+        <form id="editForm" method="POST" class="p-6 space-y-5">
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Type</label>
-                    <select name="type" id="edit_type" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Type</label>
+                    <select name="type" id="edit_type" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                         <option value="PLANNED">Planned</option>
                         <option value="UNPLANNED">Unplanned</option>
                         <option value="ADHOC">Ad-Hoc</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Status</label>
-                    <select name="status" id="edit_status" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                    <select name="status" id="edit_status" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                         <option value="TODO">To Do</option>
                         <option value="IN_PROGRESS">In Progress</option>
                         <option value="HOLD">Hold</option>
@@ -267,50 +294,50 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Title</label>
-                <input type="text" name="title" id="edit_title" required class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Title</label>
+                <input type="text" name="title" id="edit_title" required class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Start Date</label>
-                    <input type="date" name="start_date" id="edit_start_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Start Date</label>
+                    <input type="date" name="start_date" id="edit_start_date" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">End Date</label>
-                    <input type="date" name="end_date" id="edit_end_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">End Date</label>
+                    <input type="date" name="end_date" id="edit_end_date" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Points</label>
-                    <input type="number" name="assigned_points" id="edit_assigned_points" required min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Points</label>
+                    <input type="number" name="assigned_points" id="edit_assigned_points" required min="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Completion Points</label>
-                    <input type="number" name="completion_points" id="edit_completion_points" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Completion Points</label>
+                    <input type="number" name="completion_points" id="edit_completion_points" min="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Planned Work</label>
-                <textarea name="planned_work" id="edit_planned_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"></textarea>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Planned Work</label>
+                <textarea name="planned_work" id="edit_planned_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white resize-none"></textarea>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Actual Work</label>
-                <textarea name="actual_work" id="edit_actual_work" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"></textarea>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Actual Work</label>
+                <textarea name="actual_work" id="edit_actual_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white resize-none"></textarea>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Next Week Plan</label>
-                <textarea name="next_week_plan" id="edit_next_week_plan" rows="2" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white"></textarea>
+                <label class="block text-sm font-medium text-slate-300 mb-2">Next Week Plan</label>
+                <textarea name="next_week_plan" id="edit_next_week_plan" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white resize-none"></textarea>
             </div>
 
-            <div class="flex gap-4">
-                <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">Save Changes</button>
-                <button type="button" onclick="closeModal()" class="px-6 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition-colors">Cancel</button>
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/25">Save Changes</button>
+                <button type="button" onclick="closeModal()" class="px-8 py-3.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-semibold transition-colors">Cancel</button>
             </div>
         </form>
     </div>
@@ -346,6 +373,10 @@ function closeModal() {
 
 document.getElementById('editModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
 });
 </script>
 {% endblock %}
