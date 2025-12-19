@@ -62,6 +62,7 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
             "planned_work": item.planned_work,
             "actual_work": item.actual_work,
             "next_week_plan": item.next_week_plan,
+            "document_url": item.document_url,
             "status": item.status
         }
         for item in items
@@ -109,6 +110,7 @@ async def create_item(
     planned_work: Optional[str] = Form(None),
     actual_work: Optional[str] = Form(None),
     next_week_plan: Optional[str] = Form(None),
+    document_url: Optional[str] = Form(None),
     completion_points: Optional[str] = Form(None),
     status: str = Form("TODO"),
     db: Session = Depends(get_db)
@@ -124,6 +126,7 @@ async def create_item(
             planned_work=planned_work or None,
             actual_work=actual_work or None,
             next_week_plan=next_week_plan or None,
+            document_url=document_url or None,
             completion_points=parse_int_or_none(completion_points),
             status=TaskStatus(status)
         )
@@ -147,6 +150,7 @@ async def update_item(
     planned_work: Optional[str] = Form(None),
     actual_work: Optional[str] = Form(None),
     next_week_plan: Optional[str] = Form(None),
+    document_url: Optional[str] = Form(None),
     completion_points: Optional[str] = Form(None),
     status: str = Form("TODO"),
     db: Session = Depends(get_db)
@@ -161,6 +165,7 @@ async def update_item(
             planned_work=planned_work or None,
             actual_work=actual_work or None,
             next_week_plan=next_week_plan or None,
+            document_url=document_url or None,
             completion_points=parse_int_or_none(completion_points),
             status=TaskStatus(status)
         )

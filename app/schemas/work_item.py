@@ -15,6 +15,7 @@ class WorkItemBase(BaseModel):
     planned_work: Optional[str] = None
     actual_work: Optional[str] = None
     next_week_plan: Optional[str] = None
+    document_url: Optional[str] = None
     status: TaskStatus = TaskStatus.TODO
 
 
@@ -32,6 +33,7 @@ class WorkItemUpdate(BaseModel):
     planned_work: Optional[str] = None
     actual_work: Optional[str] = None
     next_week_plan: Optional[str] = None
+    document_url: Optional[str] = None
     status: Optional[TaskStatus] = None
 
 

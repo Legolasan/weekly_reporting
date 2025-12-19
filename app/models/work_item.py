@@ -36,6 +36,7 @@ class WorkItem(Base):
     planned_work = Column(Text, nullable=True)
     actual_work = Column(Text, nullable=True)
     next_week_plan = Column(Text, nullable=True)
+    document_url = Column(String(500), nullable=True)
     status = Column(String(20), nullable=False, default=TaskStatus.TODO.value)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

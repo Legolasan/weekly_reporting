@@ -40,6 +40,7 @@ def create_work_item(db: Session, item: WorkItemCreate) -> WorkItem:
         planned_work=item.planned_work,
         actual_work=item.actual_work,
         next_week_plan=item.next_week_plan,
+        document_url=item.document_url,
         status=item.status.value
     )
     db.add(db_item)
