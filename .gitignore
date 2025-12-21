@@ -1,0 +1,8 @@
+
+# Test artifacts
+allure-results/
+.coverage
+test.db
+coverage.xml
+htmlcov/
+__pycache__/
