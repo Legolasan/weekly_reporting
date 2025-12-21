@@ -13,7 +13,7 @@ class WorkWeek(Base):
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
     week_start = Column(Date, nullable=False, index=True)
     week_end = Column(Date, nullable=False)
     total_points = Column(Integer, default=100)

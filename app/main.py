@@ -46,18 +46,34 @@ async def health_check():
 # Startup event - create tables and ensure admin user exists
 @app.on_event("startup")
 async def startup_event():
+    from app.database import engine, Base
+    from sqlalchemy import text, inspect
+    import bcrypt
+    
     # Step 1: Create tables
     try:
-        from app.database import engine, Base
         Base.metadata.create_all(bind=engine, checkfirst=True)
         print("Database tables ready")
     except Exception as e:
         print(f"Table creation note: {e}")
     
-    # Step 2: Ensure admin user exists (separate try block)
+    # Step 2: Ensure work_weeks has user_id column (migration fix)
+    try:
+        with engine.connect() as conn:
+            inspector = inspect(engine)
+            columns = [col['name'] for col in inspector.get_columns('work_weeks')]
+            
+            if 'user_id' not in columns:
+                print("Adding user_id column to work_weeks...")
+                conn.execute(text("ALTER TABLE work_weeks ADD COLUMN user_id UUID"))
+                conn.commit()
+                print("Added user_id column to work_weeks")
+    except Exception as e:
+        print(f"Schema update note: {e}")
+    
+    # Step 3: Ensure admin user exists
     try:
         from app.models.user import User
-        import bcrypt
         
         db = SessionLocal()
         try:
@@ -65,7 +81,6 @@ async def startup_event():
             admin = db.query(User).filter(User.email == admin_email).first()
             
             if not admin:
-                # Hash password using bcrypt directly (avoiding passlib compatibility issues)
                 password_hash = bcrypt.hashpw("12345".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 
                 admin_user = User(
