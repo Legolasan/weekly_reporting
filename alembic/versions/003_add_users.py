@@ -10,14 +10,17 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 import uuid
-from passlib.context import CryptContext
+import bcrypt
 
 revision: str = '003'
 down_revision: Union[str, None] = '002'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt."""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
 def upgrade() -> None:
@@ -41,7 +44,7 @@ def upgrade() -> None:
     
     # Create admin user if not exists
     admin_id = uuid.uuid4()
-    admin_password_hash = pwd_context.hash("12345")
+    admin_password_hash = hash_password("12345")
     op.execute(
         f"""
         INSERT INTO users (id, email, password_hash, is_admin, created_at, updated_at)
