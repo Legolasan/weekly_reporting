@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v2.0.0 - Added authentication, user profiles, admin dashboard -->
+<!-- v2.1.0 - Fixed scrolling UX for work items list -->
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -65,8 +65,8 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-200 min-h-screen antialiased">
-    <div class="flex">
+<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-200 h-screen overflow-hidden antialiased">
+    <div class="flex h-screen">
         <!-- Sidebar -->
         <nav class="w-72 min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 border-r border-slate-800/60 fixed shadow-2xl">
             <!-- Logo Section -->
@@ -256,7 +256,7 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-72 p-8 min-h-screen">
+        <main class="flex-1 ml-72 p-8 h-screen overflow-y-auto">
             {% block content %}{% endblock %}
         </main>
     </div>
