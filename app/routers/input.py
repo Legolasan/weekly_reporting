@@ -80,6 +80,10 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
     # Get sidebar stats
     sidebar_stats = get_current_week_stats(db, user.id)
     
+    # Detect if this is a future week (for planning mode)
+    today = date.today()
+    is_future_week = week.week_start > today
+    
     return templates.TemplateResponse("input.html", {
         "request": request,
         "user": user,
@@ -97,7 +101,8 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
         "task_types": TaskType,
         "task_statuses": TaskStatus,
         "active_page": "input",
-        "sidebar_stats": sidebar_stats
+        "sidebar_stats": sidebar_stats,
+        "is_future_week": is_future_week
     })
 
 

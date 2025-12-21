@@ -7,8 +7,21 @@
     <!-- Header with Week Navigation - Fixed -->
     <div class="flex-shrink-0 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-4xl font-bold text-white tracking-tight">Work Items</h1>
-            <p class="text-slate-400 mt-2 text-lg">Manage tasks for the selected week</p>
+            <div class="flex items-center gap-3">
+                <h1 class="text-4xl font-bold text-white tracking-tight">Work Items</h1>
+                {% if is_future_week %}
+                <span class="px-3 py-1.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30">
+                    Planning Next Week
+                </span>
+                {% endif %}
+            </div>
+            <p class="text-slate-400 mt-2 text-lg">
+                {% if is_future_week %}
+                Plan tasks for upcoming week - completion details can be added later
+                {% else %}
+                Manage tasks for the selected week
+                {% endif %}
+            </p>
         </div>
         <div class="flex items-center gap-3">
             <a href="/input/{{ prev_week }}" class="p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-700/50 hover:border-slate-600 transition-all">
@@ -77,8 +90,20 @@
         <div class="lg:col-span-1 overflow-y-auto pr-2">
             <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50">
                 <div class="p-6 border-b border-slate-700/50">
-                    <h2 class="text-xl font-semibold text-white">Add Work Item</h2>
-                    <p class="text-sm text-slate-400 mt-1">Create a new task</p>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-semibold text-white">Add Work Item</h2>
+                            <p class="text-sm text-slate-400 mt-1">Create a new task</p>
+                        </div>
+                        {% if is_future_week %}
+                        <span class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Planning Mode
+                        </span>
+                        {% endif %}
+                    </div>
                 </div>
                 <form action="/api/work-items" method="POST" class="p-6 space-y-5">
                     <input type="hidden" name="week_id" value="{{ week.id }}">
@@ -108,12 +133,12 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div id="add_points_grid" class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-300 mb-2">Points</label>
                             <input type="number" name="assigned_points" required min="0" max="{{ remaining_points }}" value="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
-                        <div>
+                        <div id="add_completion_field">
                             <label class="block text-sm font-medium text-slate-300 mb-2">Completion</label>
                             <input type="number" name="completion_points" min="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0">
                         </div>
@@ -121,7 +146,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
-                        <select name="status" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select name="status" id="add_status" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="TODO">To Do</option>
                             <option value="IN_PROGRESS">In Progress</option>
                             <option value="HOLD">Hold</option>
@@ -136,7 +161,7 @@
                         <textarea name="planned_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="What was planned?"></textarea>
                     </div>
 
-                    <div>
+                    <div id="add_actual_work_field">
                         <label class="block text-sm font-medium text-slate-300 mb-2">Actual Work</label>
                         <textarea name="actual_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="What was actually done?"></textarea>
                     </div>
@@ -277,9 +302,16 @@
 <div id="editModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
     <div class="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
         <div class="p-6 border-b border-slate-700 flex items-center justify-between sticky top-0 bg-slate-800 z-10">
-            <div>
-                <h2 class="text-xl font-semibold text-white">Edit Work Item</h2>
-                <p class="text-sm text-slate-400 mt-1">Update task details</p>
+            <div class="flex items-center gap-3">
+                <div>
+                    <h2 class="text-xl font-semibold text-white">Edit Work Item</h2>
+                    <p class="text-sm text-slate-400 mt-1">Update task details</p>
+                </div>
+                {% if is_future_week %}
+                <span class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-cyan-500/20 text-cyan-400">
+                    Planning Mode
+                </span>
+                {% endif %}
             </div>
             <button onclick="closeModal()" class="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,12 +358,12 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div id="edit_points_grid" class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Points</label>
                     <input type="number" name="assigned_points" id="edit_assigned_points" required min="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                 </div>
-                <div>
+                <div id="edit_completion_field">
                     <label class="block text-sm font-medium text-slate-300 mb-2">Completion Points</label>
                     <input type="number" name="completion_points" id="edit_completion_points" min="0" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white">
                 </div>
@@ -342,7 +374,7 @@
                 <textarea name="planned_work" id="edit_planned_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white resize-none"></textarea>
             </div>
 
-            <div>
+            <div id="edit_actual_work_field">
                 <label class="block text-sm font-medium text-slate-300 mb-2">Actual Work</label>
                 <textarea name="actual_work" id="edit_actual_work" rows="2" class="w-full bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white resize-none"></textarea>
             </div>
@@ -367,6 +399,108 @@
 
 <script>
 const items = {{ items_json | tojson | safe }};
+const isFutureWeek = {{ is_future_week | tojson }};
+
+// Store original status options for restoration
+const allStatusOptions = [
+    { value: 'TODO', text: 'To Do' },
+    { value: 'IN_PROGRESS', text: 'In Progress' },
+    { value: 'HOLD', text: 'Hold' },
+    { value: 'DELAYED', text: 'Delayed' },
+    { value: 'COMPLETED', text: 'Completed' },
+    { value: 'ABANDONED', text: 'Abandoned' }
+];
+
+const planningModeStatuses = ['TODO', 'IN_PROGRESS'];
+
+// Toggle planning mode for Add form (hides Completion Points and Actual Work for future weeks)
+function togglePlanningMode() {
+    const completionField = document.getElementById('add_completion_field');
+    const actualWorkField = document.getElementById('add_actual_work_field');
+    const statusSelect = document.getElementById('add_status');
+    const pointsGrid = document.getElementById('add_points_grid');
+    
+    if (isFutureWeek) {
+        // Hide completion points and actual work
+        completionField.style.display = 'none';
+        actualWorkField.style.display = 'none';
+        // Make points grid single column
+        pointsGrid.classList.remove('grid-cols-2');
+        pointsGrid.classList.add('grid-cols-1');
+        // Filter status options
+        filterStatusOptions(statusSelect, planningModeStatuses);
+    } else {
+        // Show all fields
+        completionField.style.display = 'block';
+        actualWorkField.style.display = 'block';
+        // Restore grid layout
+        pointsGrid.classList.remove('grid-cols-1');
+        pointsGrid.classList.add('grid-cols-2');
+        // Restore all status options
+        restoreAllStatusOptions(statusSelect);
+    }
+}
+
+// Toggle planning mode for Edit modal
+function toggleEditPlanningMode() {
+    const completionField = document.getElementById('edit_completion_field');
+    const actualWorkField = document.getElementById('edit_actual_work_field');
+    const statusSelect = document.getElementById('edit_status');
+    const pointsGrid = document.getElementById('edit_points_grid');
+    
+    if (isFutureWeek) {
+        // Hide completion points and actual work
+        completionField.style.display = 'none';
+        actualWorkField.style.display = 'none';
+        // Make points grid single column
+        pointsGrid.classList.remove('grid-cols-2');
+        pointsGrid.classList.add('grid-cols-1');
+        // Filter status options
+        filterStatusOptions(statusSelect, planningModeStatuses);
+    } else {
+        // Show all fields
+        completionField.style.display = 'block';
+        actualWorkField.style.display = 'block';
+        // Restore grid layout
+        pointsGrid.classList.remove('grid-cols-1');
+        pointsGrid.classList.add('grid-cols-2');
+        // Restore all status options
+        restoreAllStatusOptions(statusSelect);
+    }
+}
+
+// Filter status options to only allowed values
+function filterStatusOptions(selectElement, allowedStatuses) {
+    const currentValue = selectElement.value;
+    selectElement.innerHTML = '';
+    allStatusOptions.forEach(opt => {
+        if (allowedStatuses.includes(opt.value)) {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.text;
+            selectElement.appendChild(option);
+        }
+    });
+    // Restore current value if still valid, otherwise default to TODO
+    if (allowedStatuses.includes(currentValue)) {
+        selectElement.value = currentValue;
+    } else {
+        selectElement.value = 'TODO';
+    }
+}
+
+// Restore all status options
+function restoreAllStatusOptions(selectElement) {
+    const currentValue = selectElement.value;
+    selectElement.innerHTML = '';
+    allStatusOptions.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.text;
+        selectElement.appendChild(option);
+    });
+    selectElement.value = currentValue || 'TODO';
+}
 
 // Toggle fields visibility based on task type for Add form
 function toggleAddFormFields() {
@@ -415,8 +549,9 @@ function editItem(itemId) {
     document.getElementById('edit_next_week_plan').value = item.next_week_plan || '';
     document.getElementById('edit_document_url').value = item.document_url || '';
 
-    // Toggle fields based on type
+    // Toggle fields based on type and planning mode
     toggleEditFormFields();
+    toggleEditPlanningMode();
 
     document.getElementById('editModal').classList.remove('hidden');
     document.getElementById('editModal').classList.add('flex');
@@ -437,5 +572,6 @@ document.addEventListener('keydown', function(e) {
 
 // Initialize field visibility on page load
 toggleAddFormFields();
+togglePlanningMode();
 </script>
 {% endblock %}
