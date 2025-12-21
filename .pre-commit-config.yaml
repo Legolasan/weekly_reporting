@@ -1,0 +1,46 @@
+# Pre-commit hooks for Work Tracker
+# Install: pip install pre-commit && pre-commit install
+
+repos:
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  # Python code formatting
+  - repo: https://github.com/psf/black
+    rev: 24.3.0
+    hooks:
+      - id: black
+        language_version: python3.12
+
+  # Python linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--max-line-length=120', '--ignore=E501,W503']
+
+  # Local hooks for testing
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: bash -c 'cd work-tracker && DATABASE_URL=sqlite:///./test.db pytest tests/ -x -q --tb=no'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [push]
+
+      - id: coverage-check
+        name: coverage-check
+        entry: bash -c 'cd work-tracker && DATABASE_URL=sqlite:///./test.db pytest tests/ --cov=app --cov-fail-under=70 -q --tb=no'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [push]
