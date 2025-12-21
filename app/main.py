@@ -71,6 +71,49 @@ async def startup_event():
     except Exception as e:
         print(f"Schema update note: {e}")
     
+    # Step 2b: Fix unique constraint on work_weeks for multi-user support
+    try:
+        with engine.connect() as conn:
+            # Check if the old unique index exists and drop it
+            result = conn.execute(text("""
+                SELECT indexname FROM pg_indexes 
+                WHERE tablename = 'work_weeks' AND indexname = 'ix_work_weeks_week_start'
+            """))
+            index_exists = result.fetchone()
+            
+            if index_exists:
+                # Check if it's unique
+                result = conn.execute(text("""
+                    SELECT indisunique FROM pg_index 
+                    JOIN pg_class ON pg_index.indexrelid = pg_class.oid
+                    WHERE pg_class.relname = 'ix_work_weeks_week_start'
+                """))
+                is_unique = result.fetchone()
+                
+                if is_unique and is_unique[0]:
+                    print("Dropping old unique index on week_start...")
+                    conn.execute(text("DROP INDEX ix_work_weeks_week_start"))
+                    conn.execute(text("CREATE INDEX ix_work_weeks_week_start ON work_weeks(week_start)"))
+                    conn.commit()
+                    print("Fixed work_weeks index for multi-user support")
+            
+            # Create the user_id + week_start unique constraint if it doesn't exist
+            result = conn.execute(text("""
+                SELECT constraint_name FROM information_schema.table_constraints 
+                WHERE table_name = 'work_weeks' AND constraint_name = 'uq_user_week'
+            """))
+            constraint_exists = result.fetchone()
+            
+            if not constraint_exists:
+                try:
+                    conn.execute(text("ALTER TABLE work_weeks ADD CONSTRAINT uq_user_week UNIQUE (user_id, week_start)"))
+                    conn.commit()
+                    print("Added unique constraint on (user_id, week_start)")
+                except Exception as ce:
+                    print(f"Constraint note: {ce}")
+    except Exception as e:
+        print(f"Index fix note: {e}")
+    
     # Step 3: Ensure admin user exists
     try:
         from app.models.user import User
