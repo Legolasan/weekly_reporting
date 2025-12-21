@@ -46,26 +46,31 @@ async def health_check():
 # Startup event - create tables and ensure admin user exists
 @app.on_event("startup")
 async def startup_event():
+    # Step 1: Create tables
     try:
         from app.database import engine, Base
-        # checkfirst=True prevents errors if tables already exist
         Base.metadata.create_all(bind=engine, checkfirst=True)
         print("Database tables ready")
+    except Exception as e:
+        print(f"Table creation note: {e}")
+    
+    # Step 2: Ensure admin user exists (separate try block)
+    try:
+        from app.models.user import User
+        import bcrypt
         
-        # Ensure admin user exists
-        from app.crud.user import get_user_by_email, create_user
         db = SessionLocal()
         try:
             admin_email = "arun.sunderraj@hevodata.com"
-            admin = get_user_by_email(db, admin_email)
+            admin = db.query(User).filter(User.email == admin_email).first()
+            
             if not admin:
-                from app.models.user import User
-                from passlib.context import CryptContext
-                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+                # Hash password using bcrypt directly (avoiding passlib compatibility issues)
+                password_hash = bcrypt.hashpw("12345".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 
                 admin_user = User(
                     email=admin_email,
-                    password_hash=pwd_context.hash("12345"),
+                    password_hash=password_hash,
                     is_admin=True
                 )
                 db.add(admin_user)
@@ -73,11 +78,13 @@ async def startup_event():
                 print(f"Created admin user: {admin_email}")
             else:
                 print(f"Admin user exists: {admin_email}")
+        except Exception as inner_e:
+            print(f"Admin user creation error: {inner_e}")
+            db.rollback()
         finally:
             db.close()
     except Exception as e:
-        # Don't crash if tables exist or other DB issues
-        print(f"Database note: {e}")
+        print(f"Startup user check error: {e}")
 
 
 # Mount static files
