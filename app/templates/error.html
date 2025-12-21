@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Error - Work Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-red-900/20 border border-red-500/50 rounded-2xl p-8">
+        <h1 class="text-3xl font-bold text-red-400 mb-4">Something went wrong</h1>
+        <p class="text-white mb-6">{{ error }}</p>
+        
+        <details class="bg-slate-800/50 rounded-lg p-4">
+            <summary class="text-slate-400 cursor-pointer hover:text-white">Technical Details</summary>
+            <pre class="mt-4 text-sm text-slate-300 overflow-x-auto whitespace-pre-wrap">{{ details }}</pre>
+        </details>
+        
+        <div class="mt-6">
+            <a href="/" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Try Again
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
