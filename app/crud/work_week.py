@@ -39,11 +39,26 @@ def create_work_week(db: Session, week_start: date, week_end: date, user_id: UUI
 
 
 def get_or_create_work_week(db: Session, target_date: date, user_id: UUID) -> WorkWeek:
-    """Get or create a work week for the given date and user."""
+    """Get or create a work week for the given date and user.
+    
+    Handles race conditions by catching IntegrityError on duplicate inserts.
+    """
+    from sqlalchemy.exc import IntegrityError
+    
     monday = target_date - timedelta(days=target_date.weekday())
     friday = monday + timedelta(days=4)
     
+    # First, try to get existing week
     week = get_work_week_by_date(db, monday, user_id)
-    if not week:
+    if week:
+        return week
+    
+    # If not found, try to create (with race condition handling)
+    try:
         week = create_work_week(db, monday, friday, user_id)
-    return week
+        return week
+    except IntegrityError:
+        # Another request created it concurrently, rollback and fetch
+        db.rollback()
+        week = get_work_week_by_date(db, monday, user_id)
+        return week
