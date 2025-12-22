@@ -124,8 +124,8 @@
             </div>
         </div>
         
-        <!-- Mini Progress Bar (Always Visible) -->
-        <div class="px-4 pb-2">
+        <!-- Mini Progress Bar (Visible only when collapsed) -->
+        <div id="points_mini_progress" class="px-4 pb-2">
             <div class="w-full bg-slate-700/50 rounded-full h-2 overflow-hidden flex">
                 {% if planned_points > 0 %}
                 <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 transition-all duration-500" style="width: {% if week.total_points > 0 %}{{ (planned_points / week.total_points * 100) }}{% else %}0{% endif %}%"></div>
@@ -577,19 +577,28 @@ function toggleOOOPanel() {
 function togglePointsPanel() {
     const content = document.getElementById('points_expanded_content');
     const chevron = document.getElementById('points_chevron');
+    const miniProgress = document.getElementById('points_mini_progress');
     
     if (!content || !chevron) return;
     
     const isHidden = content.classList.contains('hidden') || content.style.display === 'none';
     
     if (isHidden) {
+        // Expanding: hide mini progress, show full content
         content.classList.remove('hidden');
         content.style.display = '';
         chevron.style.transform = 'rotate(180deg)';
+        if (miniProgress) {
+            miniProgress.style.display = 'none';
+        }
     } else {
+        // Collapsing: show mini progress, hide full content
         content.classList.add('hidden');
         content.style.display = 'none';
         chevron.style.transform = 'rotate(0deg)';
+        if (miniProgress) {
+            miniProgress.style.display = '';
+        }
     }
 }
 
@@ -599,6 +608,7 @@ function initializePanels() {
     const oooChevron = document.getElementById('ooo_chevron');
     const pointsContent = document.getElementById('points_expanded_content');
     const pointsChevron = document.getElementById('points_chevron');
+    const pointsMiniProgress = document.getElementById('points_mini_progress');
     
     // Ensure OOO panel starts collapsed
     if (oooContent && oooChevron) {
@@ -607,11 +617,14 @@ function initializePanels() {
         oooChevron.style.transform = 'rotate(0deg)';
     }
     
-    // Ensure Points panel starts collapsed
+    // Ensure Points panel starts collapsed (show mini progress, hide full content)
     if (pointsContent && pointsChevron) {
         pointsContent.classList.add('hidden');
         pointsContent.style.display = 'none';
         pointsChevron.style.transform = 'rotate(0deg)';
+        if (pointsMiniProgress) {
+            pointsMiniProgress.style.display = '';
+        }
     }
 }
 
