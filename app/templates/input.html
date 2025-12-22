@@ -73,7 +73,7 @@
         </div>
         
         <!-- Expanded Content (Hidden by default) -->
-        <div id="ooo_expanded_content" class="hidden px-4 pb-4">
+        <div id="ooo_expanded_content" class="hidden px-4 pb-4" style="display: none;">
             <p class="text-sm text-slate-400 mb-4">Mark days off to adjust weekly capacity</p>
             <form action="/api/work-weeks/{{ week.id }}/ooo" method="POST" class="flex flex-col gap-4" onsubmit="return handleOOOFormSubmit(this)">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -140,7 +140,7 @@
         </div>
         
         <!-- Expanded Content (Hidden by default) -->
-        <div id="points_expanded_content" class="hidden px-4 pb-4">
+        <div id="points_expanded_content" class="hidden px-4 pb-4" style="display: none;">
             <div class="w-full bg-slate-700/50 rounded-full h-4 mb-4 overflow-hidden flex">
                 {% if planned_points > 0 %}
                 <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-4 transition-all duration-500" style="width: {% if week.total_points > 0 %}{{ (planned_points / week.total_points * 100) }}{% else %}0{% endif %}%"></div>
@@ -517,6 +517,9 @@ function handleFormSubmit(form) {
 document.addEventListener('DOMContentLoaded', function() {
     const addKey = document.getElementById('add_idempotency_key');
     if (addKey) addKey.value = generateUUID();
+    
+    // Initialize panels to collapsed state
+    initializePanels();
 });
 
 // OOO form handling
@@ -555,13 +558,18 @@ function handleOOOFormSubmit(form) {
 function toggleOOOPanel() {
     const content = document.getElementById('ooo_expanded_content');
     const chevron = document.getElementById('ooo_chevron');
-    const summary = document.getElementById('ooo_collapsed_summary');
     
-    if (content.classList.contains('hidden')) {
+    if (!content || !chevron) return;
+    
+    const isHidden = content.classList.contains('hidden') || content.style.display === 'none';
+    
+    if (isHidden) {
         content.classList.remove('hidden');
+        content.style.display = '';
         chevron.style.transform = 'rotate(180deg)';
     } else {
         content.classList.add('hidden');
+        content.style.display = 'none';
         chevron.style.transform = 'rotate(0deg)';
     }
 }
@@ -570,12 +578,40 @@ function togglePointsPanel() {
     const content = document.getElementById('points_expanded_content');
     const chevron = document.getElementById('points_chevron');
     
-    if (content.classList.contains('hidden')) {
+    if (!content || !chevron) return;
+    
+    const isHidden = content.classList.contains('hidden') || content.style.display === 'none';
+    
+    if (isHidden) {
         content.classList.remove('hidden');
+        content.style.display = '';
         chevron.style.transform = 'rotate(180deg)';
     } else {
         content.classList.add('hidden');
+        content.style.display = 'none';
         chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Initialize panels to collapsed state on page load
+function initializePanels() {
+    const oooContent = document.getElementById('ooo_expanded_content');
+    const oooChevron = document.getElementById('ooo_chevron');
+    const pointsContent = document.getElementById('points_expanded_content');
+    const pointsChevron = document.getElementById('points_chevron');
+    
+    // Ensure OOO panel starts collapsed
+    if (oooContent && oooChevron) {
+        oooContent.classList.add('hidden');
+        oooContent.style.display = 'none';
+        oooChevron.style.transform = 'rotate(0deg)';
+    }
+    
+    // Ensure Points panel starts collapsed
+    if (pointsContent && pointsChevron) {
+        pointsContent.classList.add('hidden');
+        pointsContent.style.display = 'none';
+        pointsChevron.style.transform = 'rotate(0deg)';
     }
 }
 
