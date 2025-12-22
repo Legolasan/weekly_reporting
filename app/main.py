@@ -114,6 +114,22 @@ async def startup_event():
     except Exception as e:
         print(f"Index fix note: {e}")
     
+    # Step 2c: Ensure work_weeks has ooo_days column (migration 005)
+    try:
+        with engine.connect() as conn:
+            inspector = inspect(engine)
+            columns = [col['name'] for col in inspector.get_columns('work_weeks')]
+            
+            if 'ooo_days' not in columns:
+                print("Adding ooo_days column to work_weeks...")
+                conn.execute(text("ALTER TABLE work_weeks ADD COLUMN ooo_days INTEGER NOT NULL DEFAULT 0"))
+                # Update total_points based on ooo_days for existing rows
+                conn.execute(text("UPDATE work_weeks SET total_points = (5 - ooo_days) * 20 WHERE ooo_days IS NOT NULL"))
+                conn.commit()
+                print("Added ooo_days column to work_weeks")
+    except Exception as e:
+        print(f"OOO column update note: {e}")
+    
     # Step 3: Ensure admin user exists
     try:
         from app.models.user import User
