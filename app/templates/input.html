@@ -105,8 +105,9 @@
                         {% endif %}
                     </div>
                 </div>
-                <form action="/api/work-items" method="POST" class="p-6 space-y-5">
+                <form action="/api/work-items" method="POST" class="p-6 space-y-5" onsubmit="return handleFormSubmit(this)">
                     <input type="hidden" name="week_id" value="{{ week.id }}">
+                    <input type="hidden" name="idempotency_key" id="add_idempotency_key">
                     
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Type</label>
@@ -319,7 +320,8 @@
                 </svg>
             </button>
         </div>
-        <form id="editForm" method="POST" class="p-6 space-y-5">
+        <form id="editForm" method="POST" class="p-6 space-y-5" onsubmit="return handleFormSubmit(this)">
+            <input type="hidden" name="idempotency_key" id="edit_idempotency_key">
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Type</label>
@@ -398,6 +400,35 @@
 </div>
 
 <script>
+// Generate UUID for idempotency keys
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Handle form submission with idempotency
+function handleFormSubmit(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn.disabled) {
+        return false; // Already submitting
+    }
+    
+    // Disable button to prevent double-click
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Saving...';
+    
+    return true;
+}
+
+// Initialize idempotency keys on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const addKey = document.getElementById('add_idempotency_key');
+    if (addKey) addKey.value = generateUUID();
+});
+
 const items = {{ items_json | tojson | safe }};
 const isFutureWeek = {{ is_future_week | tojson }};
 
@@ -536,6 +567,9 @@ function editItem(itemId) {
     const item = items.find(i => i.id === itemId);
     if (!item) return;
 
+    // Generate new idempotency key for this edit
+    document.getElementById('edit_idempotency_key').value = generateUUID();
+    
     document.getElementById('editForm').action = `/api/work-items/${itemId}`;
     document.getElementById('edit_type').value = item.type;
     document.getElementById('edit_status').value = item.status;

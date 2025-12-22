@@ -15,11 +15,26 @@ def get_work_items_by_week(db: Session, week_id: UUID) -> List[WorkItem]:
     return db.query(WorkItem).filter(WorkItem.week_id == week_id).order_by(WorkItem.created_at).all()
 
 
-def validate_points(db: Session, week_id: UUID, new_points: int, exclude_item_id: UUID = None) -> int:
-    """Validate points and return remaining points. Raises ValueError if exceeded."""
+def validate_points(db: Session, week_id: UUID, new_points: int, exclude_item_id: UUID = None, lock: bool = True) -> int:
+    """Validate points and return remaining points. Raises ValueError if exceeded.
+    
+    Args:
+        db: Database session
+        week_id: The week to validate points for
+        new_points: Points being added/updated
+        exclude_item_id: Item ID to exclude from calculation (for updates)
+        lock: If True, acquires row-level locks on work items to prevent race conditions
+    """
+    # Build base query
     query = db.query(func.coalesce(func.sum(WorkItem.assigned_points), 0)).filter(WorkItem.week_id == week_id)
     if exclude_item_id:
         query = query.filter(WorkItem.id != exclude_item_id)
+    
+    # Use FOR UPDATE to lock rows during validation (prevents concurrent modifications)
+    if lock:
+        # Lock all work items for this week to ensure accurate sum
+        db.query(WorkItem).filter(WorkItem.week_id == week_id).with_for_update().all()
+    
     current = query.scalar()
     remaining = 100 - current
     if new_points > remaining:

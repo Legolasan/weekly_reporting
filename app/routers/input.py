@@ -5,6 +5,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import Optional
+from collections import OrderedDict
+import time
 from app.database import get_db
 from app.crud import (
     get_or_create_work_week, get_work_week_by_date, get_work_weeks,
@@ -18,6 +20,37 @@ from app.auth import get_current_user_from_cookie
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+# Simple idempotency cache with TTL (5 minutes)
+# Stores: {idempotency_key: (timestamp, redirect_url)}
+_idempotency_cache: OrderedDict = OrderedDict()
+_IDEMPOTENCY_TTL = 300  # 5 minutes
+
+def check_idempotency(key: str) -> Optional[str]:
+    """Check if request is duplicate. Returns redirect URL if duplicate, None otherwise."""
+    if not key:
+        return None
+    
+    # Clean expired entries
+    now = time.time()
+    while _idempotency_cache:
+        oldest_key, (ts, _) = next(iter(_idempotency_cache.items()))
+        if now - ts > _IDEMPOTENCY_TTL:
+            _idempotency_cache.pop(oldest_key)
+        else:
+            break
+    
+    # Check if key exists
+    if key in _idempotency_cache:
+        _, redirect_url = _idempotency_cache[key]
+        return redirect_url
+    
+    return None
+
+def store_idempotency(key: str, redirect_url: str):
+    """Store idempotency key with result."""
+    if key:
+        _idempotency_cache[key] = (time.time(), redirect_url)
 
 
 def parse_date(date_str: str) -> date:
@@ -128,11 +161,17 @@ async def create_item(
     document_url: Optional[str] = Form(None),
     completion_points: Optional[str] = Form(None),
     status: str = Form("TODO"),
+    idempotency_key: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     user = get_current_user_from_cookie(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    
+    # Check for duplicate submission
+    cached_redirect = check_idempotency(idempotency_key)
+    if cached_redirect:
+        return RedirectResponse(url=cached_redirect, status_code=302)
     
     try:
         item_data = WorkItemCreate(
@@ -153,7 +192,12 @@ async def create_item(
         
         # Get week to redirect back
         week = db.query(WorkWeek).filter(WorkWeek.id == week_id).first()
-        return RedirectResponse(url=f"/input/{week.week_start}", status_code=302)
+        redirect_url = f"/input/{week.week_start}"
+        
+        # Store idempotency key
+        store_idempotency(idempotency_key, redirect_url)
+        
+        return RedirectResponse(url=redirect_url, status_code=302)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -173,11 +217,17 @@ async def update_item(
     document_url: Optional[str] = Form(None),
     completion_points: Optional[str] = Form(None),
     status: str = Form("TODO"),
+    idempotency_key: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     user = get_current_user_from_cookie(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
+    
+    # Check for duplicate submission
+    cached_redirect = check_idempotency(idempotency_key)
+    if cached_redirect:
+        return RedirectResponse(url=cached_redirect, status_code=302)
     
     try:
         item_data = WorkItemUpdate(
@@ -197,7 +247,12 @@ async def update_item(
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         
-        return RedirectResponse(url=f"/input/{item.work_week.week_start}", status_code=302)
+        redirect_url = f"/input/{item.work_week.week_start}"
+        
+        # Store idempotency key
+        store_idempotency(idempotency_key, redirect_url)
+        
+        return RedirectResponse(url=redirect_url, status_code=302)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
