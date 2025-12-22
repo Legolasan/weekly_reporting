@@ -17,6 +17,7 @@ class WorkWeek(Base):
     week_start = Column(Date, nullable=False, index=True)
     week_end = Column(Date, nullable=False)
     total_points = Column(Integer, default=100)
+    ooo_days = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -30,3 +31,12 @@ class WorkWeek(Base):
     @property
     def remaining_points(self):
         return self.total_points - self.used_points
+    
+    @property
+    def working_days(self):
+        """Calculate working days based on OOO days."""
+        return 5 - self.ooo_days
+    
+    def calculate_total_points(self):
+        """Calculate total_points based on OOO days: (5 - ooo_days) * 20."""
+        return (5 - self.ooo_days) * 20

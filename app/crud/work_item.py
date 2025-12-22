@@ -25,6 +25,15 @@ def validate_points(db: Session, week_id: UUID, new_points: int, exclude_item_id
         exclude_item_id: Item ID to exclude from calculation (for updates)
         lock: If True, acquires row-level locks on work items to prevent race conditions
     """
+    from app.models.work_week import WorkWeek
+    
+    # Get the week to access total_points (which may be adjusted for OOO)
+    week = db.query(WorkWeek).filter(WorkWeek.id == week_id).first()
+    if not week:
+        raise ValueError("Work week not found")
+    
+    total_points = week.total_points
+    
     # Build base query
     query = db.query(func.coalesce(func.sum(WorkItem.assigned_points), 0)).filter(WorkItem.week_id == week_id)
     if exclude_item_id:
@@ -36,9 +45,9 @@ def validate_points(db: Session, week_id: UUID, new_points: int, exclude_item_id
         db.query(WorkItem).filter(WorkItem.week_id == week_id).with_for_update().all()
     
     current = query.scalar()
-    remaining = 100 - current
+    remaining = total_points - current
     if new_points > remaining:
-        raise ValueError(f"Only {remaining} points remaining for this week")
+        raise ValueError(f"Only {remaining} points remaining for this week (total: {total_points})")
     return remaining
 
 

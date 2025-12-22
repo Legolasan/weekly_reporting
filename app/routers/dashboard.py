@@ -48,7 +48,7 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "unplanned_points": unplanned_points,
             "adhoc_points": adhoc_points,
             "total_used": total_used,
-            "remaining_points": 100 - total_used,
+            "remaining_points": current_week.total_points - total_used,
             "pending_items": pending_items,
             "active_page": "dashboard",
             "sidebar_stats": sidebar_stats
@@ -61,5 +61,5 @@ async def dashboard(request: Request, db: Session = Depends(get_db)):
             "error": str(e),
             "details": error_details,
             "active_page": "dashboard",
-            "sidebar_stats": {"total_used": 0, "remaining": 100, "percentage": 0}
+            "sidebar_stats": {"total_used": 0, "remaining": 100, "percentage": 0, "total_points": 100}
         }, status_code=500)

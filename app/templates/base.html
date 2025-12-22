@@ -203,7 +203,7 @@
                     </div>
                     <div class="flex items-center justify-between text-xs mb-1">
                         <span class="text-slate-400">Progress</span>
-                        <span class="text-white font-bold">{{ sidebar_stats.total_used if sidebar_stats else 0 }} / 100 pts</span>
+                        <span class="text-white font-bold">{{ sidebar_stats.total_used if sidebar_stats else 0 }} / {{ sidebar_stats.total_points if sidebar_stats else 100 }} pts</span>
                     </div>
                     <div class="w-full bg-slate-700/50 rounded-full h-2 mt-2 overflow-hidden">
                         <div class="h-2 rounded-full transition-all duration-500 {% if sidebar_stats and sidebar_stats.percentage >= 80 %}bg-gradient-to-r from-red-500 to-orange-500{% elif sidebar_stats and sidebar_stats.percentage >= 50 %}bg-gradient-to-r from-amber-500 to-yellow-500{% else %}bg-gradient-to-r from-blue-500 to-purple-500{% endif %}" style="width: {{ sidebar_stats.percentage if sidebar_stats else 0 }}%"></div>

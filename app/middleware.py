@@ -25,6 +25,7 @@ def get_current_week_stats(db, user_id: UUID = None):
             "week_end": monday + timedelta(days=4),
             "total_used": 0,
             "remaining": 100,
+            "total_points": 100,
             "percentage": 0,
             "planned": 0,
             "unplanned": 0,
@@ -37,13 +38,15 @@ def get_current_week_stats(db, user_id: UUID = None):
     unplanned = sum(i.assigned_points for i in items if i.type == "UNPLANNED")
     adhoc = sum(i.assigned_points for i in items if i.type == "ADHOC")
     total_used = planned + unplanned + adhoc
+    total_points = week.total_points
     
     return {
         "week_start": week.week_start,
         "week_end": week.week_end,
         "total_used": total_used,
-        "remaining": 100 - total_used,
-        "percentage": total_used,
+        "remaining": total_points - total_used,
+        "total_points": total_points,
+        "percentage": (total_used / total_points * 100) if total_points > 0 else 0,
         "planned": planned,
         "unplanned": unplanned,
         "adhoc": adhoc

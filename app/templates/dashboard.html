@@ -26,11 +26,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
-                <span class="text-3xl font-bold text-white">{{ total_used }}<span class="text-lg text-slate-500">/100</span></span>
+                <span class="text-3xl font-bold text-white">{{ total_used }}<span class="text-lg text-slate-500">/{{ current_week.total_points }}</span></span>
             </div>
             <div class="relative w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
                 <div class="absolute inset-0 shimmer"></div>
-                <div class="bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full transition-all duration-700 relative" style="width: {{ total_used }}%"></div>
+                <div class="bg-gradient-to-r from-blue-500 to-blue-400 h-3 rounded-full transition-all duration-700 relative" style="width: {% if current_week.total_points > 0 %}{{ (total_used / current_week.total_points * 100) }}{% else %}0{% endif %}%"></div>
             </div>
             <p class="text-sm text-slate-400 mt-3 font-medium">{{ remaining_points }} points remaining</p>
         </div>
