@@ -23,10 +23,14 @@ def get_analytics_data(db: Session, weeks_back: int = 12, user_id: Optional[UUID
     for week in weeks:
         items = db.query(WorkItem).filter(WorkItem.week_id == week.id).all()
         total_used = sum(item.assigned_points for item in items)
+        total_points = week.total_points
         points_trend.append({
             "week": week.week_start.strftime("%m/%d"),
             "used": total_used,
-            "remaining": 100 - total_used
+            "remaining": total_points - total_used,
+            "total_points": total_points,
+            "ooo_days": week.ooo_days,
+            "is_ooo": week.ooo_days > 0
         })
     
     # Task type distribution

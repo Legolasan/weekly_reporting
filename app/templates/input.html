@@ -44,24 +44,71 @@
         </div>
     </div>
 
+    <!-- OOO Setting Section -->
+    <div class="flex-shrink-0 bg-gradient-to-br from-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl p-6 border border-amber-700/30 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white">Out of Office (OOO)</h3>
+                    <p class="text-sm text-slate-400">Mark days off to adjust weekly capacity</p>
+                </div>
+            </div>
+            <form action="/api/work-weeks/{{ week.id }}/ooo" method="POST" class="flex items-center gap-4" onsubmit="return handleOOOFormSubmit(this)">
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-medium text-slate-300">Days OOO:</label>
+                    <select name="ooo_days" id="ooo_days" class="bg-slate-700/50 border border-slate-600/50 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent" onchange="updateOOOPreview()">
+                        <option value="0" {% if week.ooo_days == 0 %}selected{% endif %}>0 (Full week)</option>
+                        <option value="1" {% if week.ooo_days == 1 %}selected{% endif %}>1 day</option>
+                        <option value="2" {% if week.ooo_days == 2 %}selected{% endif %}>2 days</option>
+                        <option value="3" {% if week.ooo_days == 3 %}selected{% endif %}>3 days</option>
+                        <option value="4" {% if week.ooo_days == 4 %}selected{% endif %}>4 days</option>
+                        <option value="5" {% if week.ooo_days == 5 %}selected{% endif %}>5 (Entire week)</option>
+                    </select>
+                    <div id="ooo_preview" class="text-sm text-slate-300">
+                        <span class="font-semibold text-amber-400">{{ week.total_points }} points</span>
+                        <span class="text-slate-500">({{ week.working_days }} working days)</span>
+                    </div>
+                </div>
+                <button type="submit" class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl transition-colors">
+                    Save
+                </button>
+            </form>
+        </div>
+        {% if week.ooo_days > 0 %}
+        <div class="mt-4 pt-4 border-t border-amber-700/30">
+            <div class="flex items-center gap-2 text-sm text-amber-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>This week has {{ week.ooo_days }} day(s) marked as OOO. Capacity adjusted to {{ week.total_points }} points.</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
     <!-- Points Summary Bar - Fixed -->
     <div class="flex-shrink-0 bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 mb-6">
         <div class="flex items-center justify-between mb-5">
             <h3 class="text-lg font-semibold text-white">Points Allocation</h3>
             <div class="text-right">
                 <span class="text-3xl font-bold text-white">{{ total_used }}</span>
-                <span class="text-slate-400 text-lg">/100</span>
+                <span class="text-slate-400 text-lg">/{{ week.total_points }}</span>
             </div>
         </div>
         <div class="w-full bg-slate-700/50 rounded-full h-4 mb-5 overflow-hidden flex">
             {% if planned_points > 0 %}
-            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-4 transition-all duration-500" style="width: {{ planned_points }}%"></div>
+            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-4 transition-all duration-500" style="width: {% if week.total_points > 0 %}{{ (planned_points / week.total_points * 100) }}{% else %}0{% endif %}%"></div>
             {% endif %}
             {% if unplanned_points > 0 %}
-            <div class="bg-gradient-to-r from-amber-500 to-amber-400 h-4 transition-all duration-500" style="width: {{ unplanned_points }}%"></div>
+            <div class="bg-gradient-to-r from-amber-500 to-amber-400 h-4 transition-all duration-500" style="width: {% if week.total_points > 0 %}{{ (unplanned_points / week.total_points * 100) }}{% else %}0{% endif %}%"></div>
             {% endif %}
             {% if adhoc_points > 0 %}
-            <div class="bg-gradient-to-r from-purple-500 to-purple-400 h-4 transition-all duration-500" style="width: {{ adhoc_points }}%"></div>
+            <div class="bg-gradient-to-r from-purple-500 to-purple-400 h-4 transition-all duration-500" style="width: {% if week.total_points > 0 %}{{ (adhoc_points / week.total_points * 100) }}{% else %}0{% endif %}%"></div>
             {% endif %}
         </div>
         <div class="flex flex-wrap items-center gap-6 text-sm">
@@ -428,6 +475,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const addKey = document.getElementById('add_idempotency_key');
     if (addKey) addKey.value = generateUUID();
 });
+
+// OOO form handling
+function updateOOOPreview() {
+    const oooDays = parseInt(document.getElementById('ooo_days').value);
+    const workingDays = 5 - oooDays;
+    const totalPoints = workingDays * 20;
+    const preview = document.getElementById('ooo_preview');
+    if (preview) {
+        preview.innerHTML = `<span class="font-semibold text-amber-400">${totalPoints} points</span> <span class="text-slate-500">(${workingDays} working days)</span>`;
+    }
+}
+
+function handleOOOFormSubmit(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn.disabled) {
+        return false;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Saving...';
+    return true;
+}
 
 const items = {{ items_json | tojson | safe }};
 const isFutureWeek = {{ is_future_week | tojson }};

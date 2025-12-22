@@ -30,12 +30,40 @@ def get_all_work_weeks(db: Session, skip: int = 0, limit: int = 100) -> List[Wor
     return db.query(WorkWeek).order_by(WorkWeek.week_start.desc()).offset(skip).limit(limit).all()
 
 
-def create_work_week(db: Session, week_start: date, week_end: date, user_id: UUID) -> WorkWeek:
-    db_week = WorkWeek(week_start=week_start, week_end=week_end, user_id=user_id)
+def create_work_week(db: Session, week_start: date, week_end: date, user_id: UUID, ooo_days: int = 0) -> WorkWeek:
+    """Create a work week with calculated total_points based on OOO days."""
+    db_week = WorkWeek(week_start=week_start, week_end=week_end, user_id=user_id, ooo_days=ooo_days)
+    db_week.total_points = db_week.calculate_total_points()
     db.add(db_week)
     db.commit()
     db.refresh(db_week)
     return db_week
+
+
+def update_work_week_ooo(db: Session, week_id: UUID, ooo_days: int, user_id: UUID = None) -> Optional[WorkWeek]:
+    """Update OOO days for a work week and recalculate total_points.
+    
+    Args:
+        db: Database session
+        week_id: The week to update
+        ooo_days: Number of OOO days (0-5)
+        user_id: Optional user_id to verify ownership
+    
+    Returns:
+        Updated WorkWeek or None if not found
+    """
+    if ooo_days < 0 or ooo_days > 5:
+        raise ValueError("OOO days must be between 0 and 5")
+    
+    week = get_work_week(db, week_id, user_id)
+    if not week:
+        return None
+    
+    week.ooo_days = ooo_days
+    week.total_points = week.calculate_total_points()
+    db.commit()
+    db.refresh(week)
+    return week
 
 
 def get_or_create_work_week(db: Session, target_date: date, user_id: UUID) -> WorkWeek:

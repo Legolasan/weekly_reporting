@@ -13,6 +13,7 @@ from app.crud import (
     get_work_items_by_week, create_work_item, update_work_item, delete_work_item,
     get_work_item
 )
+from app.crud.work_week import update_work_week_ooo
 from app.schemas import WorkItemCreate, WorkItemUpdate
 from app.models.work_item import TaskType, TaskStatus
 from app.middleware import get_current_week_stats
@@ -128,7 +129,7 @@ async def input_page_for_week(request: Request, week_start: str, db: Session = D
         "unplanned_points": unplanned_points,
         "adhoc_points": adhoc_points,
         "total_used": total_used,
-        "remaining_points": 100 - total_used,
+        "remaining_points": week.total_points - total_used,
         "prev_week": prev_week,
         "next_week": next_week,
         "task_types": TaskType,
@@ -271,6 +272,49 @@ async def delete_item(item_id: UUID, request: Request, db: Session = Depends(get
     delete_work_item(db, item_id)
     
     return RedirectResponse(url=f"/input/{week_start}", status_code=302)
+
+
+@router.post("/api/work-weeks/{week_id}/ooo")
+async def update_week_ooo(
+    week_id: UUID,
+    request: Request,
+    ooo_days: int = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Update OOO days for a work week and recalculate total_points."""
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    
+    # Validate ooo_days range
+    if ooo_days < 0 or ooo_days > 5:
+        raise HTTPException(status_code=400, detail="OOO days must be between 0 and 5")
+    
+    # Get the week to check ownership and current items
+    from app.crud.work_week import get_work_week
+    week = get_work_week(db, week_id, user.id)
+    if not week:
+        raise HTTPException(status_code=404, detail="Work week not found")
+    
+    # Calculate new total_points
+    new_total_points = (5 - ooo_days) * 20
+    
+    # Check if existing work items exceed new capacity
+    items = get_work_items_by_week(db, week_id)
+    current_points = sum(item.assigned_points for item in items)
+    
+    if current_points > new_total_points:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot set {ooo_days} OOO days. Current work items total {current_points} points, but only {new_total_points} points available."
+        )
+    
+    # Update OOO days
+    updated_week = update_work_week_ooo(db, week_id, ooo_days, user.id)
+    if not updated_week:
+        raise HTTPException(status_code=500, detail="Failed to update OOO days")
+    
+    return RedirectResponse(url=f"/input/{updated_week.week_start}", status_code=302)
 
 
 from app.models.work_week import WorkWeek
